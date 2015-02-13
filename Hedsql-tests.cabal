@@ -1,0 +1,48 @@
+name:           Hedsql-examples
+version:        0.1
+cabal-version:  >= 1.2
+build-type:     Simple
+author:         Leonard Monnier
+stability:      Experimental
+maintainer:     Leonard Monnier <leonard.monnier@gmail.com>
+synopsis:       Hedsql examples and tests
+description:    
+                Examples and tests of the Hedsql package.
+                .
+                The tests are located in this separate packages.
+                The reason is because Hedsql is tested in two ways:
+                1) against expected string values;
+                2) directly against a database.
+                .
+                For the second kind of tests, we need connections with a database (better so...).
+                The issue was that it would not have make sense to request dependencies toward a particular DB package for Hedsql
+                (that package prefers to stay DB package agnistic!)
+                .
+                On the other hand, we didn't wanted to copy-paste the examples queries between the string and DB tests.
+license:        GPL-3
+license-file:   LICENSE
+copyright:      (c) 2015 Leonard Monnier
+tested-with:    GHC==7.8.2
+
+library
+  hs-source-dirs:   src
+  build-depends:    
+                    base >= 4,
+                    Hedsql,
+                    test-framework >=0.8 && <0.9,
+                    test-framework-hunit >=0.3 && <0.4,
+                    HUnit >=1.2 && <1.3
+  ghc-options:      -Wall
+  exposed-modules:  
+                   Database.Hedsql.Examples.Create,
+                   Database.Hedsql.Examples.Select
+  other-modules:    
+                   Database.Hedsql.Tests.Queries,
+                   Database.Hedsql.Tests.TableManipulations
+
+executable Main
+  build-depends:   base >= 4
+  hs-source-dirs:  src
+  ghc-options:     -Wall -rtsopts
+  main-is:         Main.hs
+
