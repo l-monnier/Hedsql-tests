@@ -37,7 +37,9 @@ testCountriesPostgreSQL =
             "Create table \"Countries\" is incorrect for PostgreSQL"
             (  "CREATE TABLE \"Countries\" ("
             ++ "\"countryId\" serial PRIMARY KEY, "
-            ++ "\"name\" varchar(256) NOT NULL, UNIQUE)"
+            ++ "\"name\" varchar(256) NOT NULL, UNIQUE, "
+            ++ "\"size\" integer, "
+            ++ "\"inhabitants\" integer)"
             )
             (P.parse countries)
 
@@ -90,7 +92,9 @@ testCountriesSqLite =
             "Create table \"Countries\" is incorrect for SqLite"
             (  "CREATE TABLE \"Countries\" ("
             ++ "\"countryId\" INTEGER PRIMARY KEY AUTOINCREMENT, "
-            ++ "\"name\" VARCHAR(256) NOT NULL, UNIQUE)"
+            ++ "\"name\" VARCHAR(256) NOT NULL, UNIQUE, "
+            ++ "\"size\" INTEGER, "
+            ++ "\"inhabitants\" INTEGER)"
             )
             (S.parse countries)
 

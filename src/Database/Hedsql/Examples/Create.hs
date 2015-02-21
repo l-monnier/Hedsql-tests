@@ -59,16 +59,20 @@ import Database.Hedsql.SqLite
 MariaDB and SqLite:
 @
 CREATE TABLE "Countries" (
-    "countryId" INTEGER      PRIMARY KEY AUTOINCREMENT,
-    "name"      VARCHAR(256) NOT NULL, UNIQUE,
+    "countryId"   INTEGER      PRIMARY KEY AUTOINCREMENT,
+    "name"        VARCHAR(256) NOT NULL, UNIQUE,
+    "size"        INTEGER,
+    "inhabitants" INTEGER
 )
 @
 
 PostgreSQL:
 @
 CREATE TABLE "Countries" (
-    "countryId" serial       PRIMARY KEY,
-    "name"      varchar(256) NOT NUL, UNIQUE,
+    "countryId"   serial       PRIMARY KEY,
+    "name"        varchar(256) NOT NUL, UNIQUE,
+    "size"        integer,
+    "inhabitants" integer
 )
 @
 -}
@@ -76,8 +80,10 @@ countries :: Table a
 countries =
     createTable
         "Countries"
-        [ col "countryId" integer       /++ primary True
-        , col "name"      (varchar 256) /++ [notNull, unique]
+        [ col "countryId"   integer       /++ primary True
+        , col "name"        (varchar 256) /++ [notNull, unique]
+        , col "size"        integer
+        , col "inhabitants" integer
         ]
 
 {-|
@@ -267,5 +273,5 @@ createChecks =
     where
         c1 =
             tableConstraint "checks" $
-                  checkT $ "age" /> (-1::Int)
+                  checkT $ ("age" /> (-1::Int))
             `and_`("lastName"    /<> value "")

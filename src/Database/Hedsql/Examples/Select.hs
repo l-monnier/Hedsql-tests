@@ -29,6 +29,29 @@ module Database.Hedsql.Examples.Select
     , fromRightJoinOn
     , fromFullJoinOn
     , fromLeftJoinOnAnd
+    , selfJoin
+    , crossJoinAlias
+    , crossRefAlias
+    
+      -- *** Sub-queries
+    , selectSubQuery
+    
+      -- ** WHERE
+    , whereAlias
+    , leftJoinWhere
+    , whereAnd
+    , whereInValues
+    , whereInSelect
+    , whereBetween
+    , whereExists
+    
+      -- ** GROUP BY
+    , selectGroupBy
+    , groupBySum
+    , groupByAlias
+    , groupByComplex
+    , groupBySumHaving
+    , havingComplex
     
       -- ** Functions
     , addition
@@ -36,8 +59,13 @@ module Database.Hedsql.Examples.Select
     , selectCurrentDate
     , selectRandom
     
+      -- ** Combined queries
+    , unionQuery
+    , unionCombined
+    
     -- * PostgreSQL
     , distinctOnSelect
+    , fromLateral
     ) where
 
 --------------------------------------------------------------------------------
@@ -159,27 +187,236 @@ fromLeftJoinOnAnd =
 {-|
 > SELECT *
 > FROM "People" AS "Father"
->   JOIN "People" AS "Child" ON "Father"."personId" = "child"."father"
+>   INNER JOIN "People" AS "Child" ON "Father"."personId" = "Child"."father"
 -}
-selfTableJoin :: Select a
-selfTableJoin =
+selfJoin :: Select a
+selfJoin =
     select (//*) /++ from (innerJoin father child cond)
     where
-        cond = id /== fatherId
-        child = people `alias` "child"
-        father = people `alias` "father"
+        cond = (father/."personId") /== (child/."father")
+        father = people `alias` "Father"
+        child = people `alias` "Child"
         people = table "People"
-        id = people/."id"
-        fatherId = "child"/."father"
 
-{-|
-> SELECT *
-> FROM "my_table" AS "a" CROSS JOIN "my_table" AS "b"
--}
+-- | > SELECT * FROM "People" AS "P" CROSS JOIN "Countries" AS "C"
 crossJoinAlias :: Select a
 crossJoinAlias =
         select (//*)
     /++ from (crossJoin ("People" `alias` "P") ("Countries" `alias` "C"))
+
+-- | > SELECT * FROM ("People" AS "P" CROSS JOIN "Countries") AS "PC";
+crossRefAlias :: Select a
+crossRefAlias =
+        select (//*)
+    /++ from ((("People" `alias` "P") `crossJoin` "Countries") `alias` "PC")
+
+-- Sub-queries
+--------------------
+
+-- | > SELECT * FROM (SELECT * FROM "People") AS "P";
+selectSubQuery :: Select a
+selectSubQuery =
+    select (//*) /++ from (subQuery (select (//*) /++ from "People") "P")
+
+--------------------
+-- WHERE
+--------------------
+
+-- | > SELECT * FROM "People" AS "P" WHERE "P"."age" > 18;
+whereAlias :: Select a
+whereAlias =
+        select (//*)
+    /++ from p
+    /++ where_ (p/."age" /> (5::Int))
+    where
+        p = table "People" `alias` "P"
+
+{-|
+> SELECT *
+> FROM "People"
+>   LEFT JOIN "Countries" ON "People"."countryId" = "Countries"."countryId"
+> WHERE "Countries"."name" = 'Italy'
+-}
+leftJoinWhere :: Select a
+leftJoinWhere =
+        select (//*)
+    /++ from (leftJoin people countries joinClause)
+    /++ where_ (countries/."name" /== value "Italy")
+    where
+        joinClause = people/.countryId /== countries/.countryId
+        countries = table "Countries"
+        people = table "People"
+        countryId = colRef "countryId"
+
+{-|
+@
+SELECT *
+FROM "People", "Countries"
+WHERE ("People"."countryId" = "Country"."countryId" AND "People"."age" > 18)
+@
+-}
+whereAnd :: Select a
+whereAnd =
+        select (//*)
+    /++ from [people, countries]
+    /++ where_ ((people/.id' /== countries/.id')
+        `and_` (people/."age" /> (18::Int)))
+    where
+        people = tableRef "People"
+        countries = tableRef "Countries"
+        id' = colRef "countryId"
+
+-- | > SELECT * FROM "Countries" WHERE "name" IN ('Italy', 'Switzerland')
+whereInValues :: Select a
+whereInValues =
+        select (//*)
+    /++ from "Countries"
+    /++ where_ ("name" `in_` values ["Italy", "Switzerland"])
+
+{-|
+@
+SELECT * FROM "People" WHERE "countryId" IN
+    (SELECT "countryId" FROM "Countries" WHERE "inhabitants" >= ("size" * 100)))
+@
+-}
+whereInSelect :: Select a
+whereInSelect =
+        select (//*)
+    /++ from "People"
+    /++ where_ ("countryId" `in_` query)
+    where
+        query =
+                select "countryId" 
+            /++ from "Countries"
+            /++ where_ ("inhabitants" />= ("size" /* (100::Int)))
+
+{-|
+@
+SELECT *
+FROM "Countries"
+WHERE ("inhabitants" BETWEEN (
+    SELECT "age" FROM "People" WHERE "firstName" LIKE '*e*') AND 10000000)
+@
+-}
+whereBetween :: Select a
+whereBetween =
+        select (//*)
+    /++ from "Countries"
+    /++ where_ (between "inhabitants" query (1000000::Int))
+    where
+        query =
+                select "age"
+            /++ from "People"
+            /++ where_ ("firstName" `like` value "*e*")
+
+{-|
+@
+SELECT *
+FROM "People"
+WHERE EXISTS (
+    SELECT *
+    FROM "Countries"
+    WHERE "People"."countryId" = "Countries"."countryId")
+@
+-}
+whereExists :: Select a
+whereExists =
+        select (//*)
+    /++ from "People"
+    /++ where_ (exists query)
+    where
+        query =
+                select (//*)
+            /++ from "Countries"
+            /++ where_ ("People"/."countryId" /== "Countries"/."countryId")
+
+--------------------
+-- GROUP BY
+--------------------
+
+-- | > SELECT "age" FROM "People" GROUP BY "age"
+selectGroupBy :: Select a
+selectGroupBy = select "age" /++ from "People" /++ groupBy "age"
+
+-- | > SELECT "lastName", sum("age") FROM "People" GROUP BY "lastName";
+groupBySum :: Select a
+groupBySum =
+        select [lastName, colRef $ sum_ "age"]
+    /++ from "People"
+    /++ groupBy lastName
+    where
+        lastName = colRef "lastName"
+
+-- | > SELECT "lastName" AS "name" FROM "People" GROUP BY "name"
+groupByAlias :: Select a
+groupByAlias =
+        select name
+    /++ from "People"
+    /++ groupBy name
+    where
+        name = "lastName" `as_` "name"
+
+{-|
+@
+SELECT
+    "personId",
+    "P"."lastName" AS "name",
+    (SUM("C"."size") * "P"."age") AS "weirdFigure"
+FROM "People" AS "P" LEFT JOIN "Countries" AS "C" USING ("personId")
+GROUP BY "personId", "P"."name"
+@
+-}
+groupByComplex :: Select a
+groupByComplex =
+         select [colRef personId, name, weird]
+     /++ from (leftJoin people countries personId)
+     /++ groupBy [colRef personId, name]
+     where
+         name = colRef (people/."lastName") `as_` "name"
+         personId = toCol "personId"
+         age = people/."age"
+         weird = colRef (sum_ (countries/."size") /* age) `as_` "weirdFigure"
+         people = table "People" `alias` "P"
+         countries = table "Countries" `alias` "C"
+
+{-|
+> SELECT "lastName", SUM("age")
+> FROM "People" GROUP BY "lastName" HAVING SUM("age") > 18
+-}
+groupBySumHaving :: Select a
+groupBySumHaving =
+        select [lastName, colRef sumAge]
+    /++ from "People"
+    /++ (groupBy lastName /++ having (sumAge /> (18::Int)))
+    where
+         lastName = colRef "lastName"
+         sumAge = sum_ "age"
+
+{-|
+@
+SELECT "personId", "P"."name", SUM("C"."size" * ("P"."age" - 2)) AS "weird"
+FROM "People" AS "P" LEFT JOIN "Countries" AS "C" USING ("personId")
+WHERE "personId" > 2
+GROUP BY "personId", "P"."name", "P"."age"
+HAVING SUM("P"."age" * "C"."size") > 5000000
+@
+-}
+havingComplex :: Select a       
+havingComplex =
+         select [colRef personId, colRef name, weird]
+     /++ from (leftJoin people countries personId)
+     /++ where_ (personId /> (2::Int))
+     /++ (   groupBy [colRef personId, name, age]
+         /++ having (sum_ (age /* size) /> (5000000::Int))
+         )
+     where
+         name = people/."name"
+         personId = toCol "personId"
+         age = people/."age"
+         size = countries/."size"
+         people = table "People" `alias` "P"
+         countries = table "Countries" `alias`"C"
+         weird = sum_ (size /* (age /- (2::Int))) `as_` "weird"
 
 --------------------
 -- Functions
@@ -213,6 +450,39 @@ PostgreSQL & SqLite
 selectRandom :: Select a
 selectRandom = select random
 
+--------------------
+-- Combined queries
+--------------------
+
+-- | Select a person by its primary key.
+selectId :: Int -> Select a
+selectId id' = select (//*) /++ from "People" /++ where_ ("personId" /== id') 
+
+{-|
+> (SELECT * FROM "People" WHERE "personId" = 1
+> UNION SELECT * FROM "People" WHERE "personId" = 2)
+-}
+unionQuery :: CombinedQuery a        
+unionQuery = union (selectId 1) (selectId 2)
+
+{-|
+> ((SELECT * FROM "People" WHERE "personId" = 1
+> UNION SELECT * FROM "People" WHERE "personId" = 2)
+> INTERSECT SELECT * FROM "People" WHERE "personId" = 1)
+-}
+unionCombined :: CombinedQuery a
+unionCombined =
+    intersect
+        unionQuery
+        (select (//*) /++ from "People" /++ where_ ("personId" /== (1::Int)))          
+
+{-|
+> (SELECT * FROM "People" WHERE "personId" = 1
+> UNION ALL SELECT * FROM "People" WHERE "personId" = 2)
+-}
+unionAllQuery :: CombinedQuery a
+unionAllQuery = unionAll (selectId 1) (selectId 2) 
+
 ----------------------------------------
 -- PostgreSQL
 ----------------------------------------
@@ -221,3 +491,20 @@ selectRandom = select random
 distinctOnSelect :: Select Pg.PostgreSQL
 distinctOnSelect =
     P.selectDistinctOn "firstName" (//*) /++ from "People" /++ orderBy "age"
+    
+{-|
+SELECT * FROM "Countries", LATERAL (
+    SELECT *
+    FROM "People"
+    WHERE "People"."countryId" = "Countries"."countryId") AS "C"
+-}
+fromLateral :: Select Pg.PostgreSQL
+fromLateral =
+        select (//*)
+    /++ from [tableRef "Countries", P.lateral subSelect "C"]
+    where
+        subSelect =
+                select (//*)
+            /++ from "People"
+            /++ where_ (("People"/."countryId") /== ("Countries"/."countryId"))
+    
