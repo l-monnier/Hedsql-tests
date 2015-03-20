@@ -39,22 +39,24 @@ import qualified Database.Hedsql.PostgreSQL                      as P
 -- | > UPDATE "People" SET "age" = 2050 WHERE "lastName" = 'Ceasar'
 equalTo :: Update a
 equalTo =
-        update "People" [assign "age" (2050::Int)]
-    /++ where_ ("lastName" /== value "Ceasar")
+        update "People" [assign (col "age" integer) (value (2050::Int))]
+    /++ where_ (col "lastName" (varchar 256) /== value "Ceasar")
 
 {-|    
-UPDATE "People" SET "age" = ("age" + 1) WHERE "countryId" IN
-  (SELECT "countryId" FROM "countries" WHERE "name" = 'Italy')
+UPDATE "People" SET "age" = "age" + 1 WHERE "countryId" IN
+  (SELECT "countryId" FROM "Countries" WHERE "name" = 'Italy')
 -}
 updateSelect :: Update a
 updateSelect =
-        update "People" [assign "age" $ "age" /+ (1::Int)]
-    /++ where_ ("countryId" `in_`subSelect)
+        update "People" [assign age $ age /+ value (1::Int)]
+    /++ where_ (countryId `in_`subSelect)
     where
         subSelect =
-                select "countryId"
-            /++ from "countries"
-            /++ where_ ("name" /== value "Italy")
+                select countryId
+            /++ from "Countries"
+            /++ where_ (col "name" (varchar 256) /== value "Italy")
+        countryId = col "countryId" (varchar 256)
+        age = col "age" integer
 
 ----------------------------------------
 -- PostgreSQL
@@ -64,4 +66,4 @@ updateSelect =
 defaultVal :: Update P.PostgreSQL
 defaultVal =
         update "People" [assign "title" default_]
-    /++ where_ ("personId" /== (1::Int))
+    /++ where_ (col "personId" integer /== value (1::Int))

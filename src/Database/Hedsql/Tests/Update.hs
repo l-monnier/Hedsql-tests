@@ -38,9 +38,9 @@ testUpdateSelect = testCase "Update with a SELECT" assertUpdate
         assertUpdate :: Assertion
         assertUpdate = assertEqual
             "Update with a SELECT is incorrect"
-            (  "UPDATE \"People\" SET \"age\" = (\"age\" + 1) "
+            (  "UPDATE \"People\" SET \"age\" = \"age\" + 1 "
             ++ "WHERE \"countryId\" IN "
-            ++ "(SELECT \"countryId\" FROM \"countries\" "
+            ++ "(SELECT \"countryId\" FROM \"Countries\" "
             ++ "WHERE \"name\" = 'Italy')"
             )
             (S.parse updateSelect)

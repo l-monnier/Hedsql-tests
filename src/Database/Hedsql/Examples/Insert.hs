@@ -43,60 +43,73 @@ import           Prelude                                         hiding (null)
 ----------------------------------------
         
 {-|
-> INSERT INTO "People" VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, NULL, 1, 2)
+MariaDB and PosgreSQL:
+> INSERT INTO "People"
+> VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, TRUE, NULL, 1, 2)
+
+SqLite:
+> INSERT INTO "People"
+> VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 1, 2)
 -}
 juliusCeasar :: Insert a
 juliusCeasar = 
     insertInto "People"
         [
-        [ value (1::Int)
-        , value "Mr"
-        , value "Julius"
-        , value "Ceasar"
-        , value (2000::Int)
-        , value null
-        , value (2::Int)
-        , value (2::Int)
+        [ wrap $ value (1::Int)
+        , wrap $ value "Mr"
+        , wrap $ value "Julius"
+        , wrap $ value "Ceasar"
+        , wrap $ value (2000::Int)
+        , wrap $ value True
+        , wrap $ value null
+        , wrap $ value (2::Int)
+        , wrap $ value (2::Int)
         ]
         ]
 
 {-|
+MariaDB and PosgreSQL:
 > INSERT INTO "People"
-> VALUES (1, 'Mr', 'Gaius Julius', 'Ceasar', 2000, NULL, NULL, 2)
+> VALUES (1, 'Mr', 'Gaius Julius', 'Ceasar', 2000, TRUE, NULL, NULL, 2)
+
+SqLite:
+> INSERT INTO "People"
+> VALUES (1, 'Mr', 'Gaius Julius', 'Ceasar', 2000, 1, NULL, NULL, 2)
 -}
 gaiusJuliusCeasar :: Insert a
 gaiusJuliusCeasar =
     insertInto "People"
         [
-        [ value (2::Int)
-        , value "Mr"
-        , value "Gaius Julius"
-        , value "Ceasar"
-        , value (2000::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $ value (2::Int)
+        , wrap $ value "Mr"
+        , wrap $ value "Gaius Julius"
+        , wrap $ value "Ceasar"
+        , wrap $ value (2000::Int)
+        , wrap $ value True
+        , wrap $ value null
+        , wrap $ value null
+        , wrap $ value (2::Int)
         ]
         ]
-
 
 {-|
 The below statement is going to fail, because the age is below 0.
 > INSERT INTO "People"
-> VALUES (NULL, 'Mr', 'Julius', 'Ceasar', -1, NULL, NULL, 2)
+> VALUES (NULL, 'Mr', 'Julius', 'Ceasar', -1, TRUE, NULL, NULL, 2)
 -}
 falseAge :: Insert a      
 falseAge = 
     insertInto "People"
         [
-        [ value null
-        , value "Mr"
-        , value "Julius"
-        , value "Ceasar"
-        , value (-1::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $ value null
+        , wrap $ value "Mr"
+        , wrap $ value "Julius"
+        , wrap $ value "Ceasar"
+        , wrap $ value (-1::Int)
+        , wrap $ value True
+        , wrap $ value null
+        , wrap $ value null
+        , wrap $ value (2::Int)
         ]
         ]
 
@@ -111,13 +124,13 @@ withCols =
         "People"
         ["title", "firstName", "lastName", "age", "passportNo", "countryId"]
         [
-        [ value "Mr"
-        , value "Julius"
-        , value "Ceasar"
-        , value (2000::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $ value "Mr"
+        , wrap $ value "Julius"
+        , wrap $ value "Ceasar"
+        , wrap $ value (2000::Int)
+        , wrap $ value null
+        , wrap $ value null
+        , wrap $ value (2::Int)
         ]
         ]
 
@@ -132,12 +145,12 @@ defaultVal =
         "People"
         ["firstName", "lastName", "age", "passportNo", "countryId"]
         [
-        [ value "Julius"
-        , value "Ceasar"
-        , value (2000::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $  value "Julius"
+        , wrap $  value "Ceasar"
+        , wrap $  value (2000::Int)
+        , wrap $  value null
+        , wrap $  value null
+        , wrap $  value (2::Int)
         ]
         ]
 
@@ -147,20 +160,21 @@ defaultVal =
 
 {-|
 > INSERT INTO "People"
-> VALUES (DEFAULT, 'Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2)
+> VALUES (DEFAULT, 'Mr', 'Julius', 'Ceasar', 2000, TRUE, NULL, NULL, 2)
 -}
 defaultValPostgreSQL :: Insert P.PostgreSQL
 defaultValPostgreSQL = 
     insertInto "People"
         [
-        [ value null
-        , value default_
-        , value "Julius"
-        , value "Ceasar"
-        , value (2000::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $ value null
+        , wrap $ value default_
+        , wrap $ value "Julius"
+        , wrap $ value "Ceasar"
+        , wrap $ value (2000::Int)
+        , wrap $ value True
+        , wrap $ value null
+        , wrap $ value null
+        , wrap $ value (2::Int)
         ]
         ]
 
@@ -177,21 +191,21 @@ multiValsPostgreSQL =
         "People"
         ["title", "firstName", "lastName", "age", "passportNo", "countryId"]
         [
-        [ value "Mr"
-        , value "Julius"
-        , value "Ceasar"
-        , value (2000::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $ value "Mr"
+        , wrap $ value "Julius"
+        , wrap $ value "Ceasar"
+        , wrap $ value (2000::Int)
+        , wrap $ value null
+        , wrap $ value null
+        , wrap $ value (2::Int)
         ]
         ,
-        [ value "Mr"
-        , value "Gnaeus"
-        , value "Pompeius"
-        , value (2000::Int)
-        , value null
-        , value null
-        , value (2::Int)
+        [ wrap $ value "Mr"
+        , wrap $ value "Gnaeus"
+        , wrap $ value "Pompeius"
+        , wrap $ value (2000::Int)
+        , wrap $ value null
+        , wrap $ value null
+        , wrap $ value (2::Int)
         ]
         ]

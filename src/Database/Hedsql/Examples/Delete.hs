@@ -26,7 +26,8 @@ import Database.Hedsql.SqLite
 
 -- | > DELETE FROM "People" WHERE "age" <> 20
 deleteNotEqualTo :: Delete a
-deleteNotEqualTo = deleteFrom "People" /++ where_ ("age" /<> value (20::Int))
+deleteNotEqualTo =
+    deleteFrom "People" /++ where_ (col "age" integer /<> value (20::Int))
 
 {-|
 > DELETE FROM "People"
@@ -36,9 +37,9 @@ deleteNotEqualTo = deleteFrom "People" /++ where_ ("age" /<> value (20::Int))
 deleteSubQuery :: Delete a
 deleteSubQuery =
         deleteFrom "People"
-    /++ where_
-        (   in_ "personId"
-        $   select "personId"
-        /++ from "Countries"
-        /++ where_ ("name" /== value "Switzerland")
+    /++ where_ ("personId" `in_`
+            (   select "personId"
+            /++ from "Countries"
+            /++ where_ (col "name" (varchar 128) /== value "Switzerland")
+            )
         )

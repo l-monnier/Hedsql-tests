@@ -51,7 +51,7 @@ testAdditionSqLite = testCase "Addition" assertSelect
         assertSelect :: Assertion
         assertSelect = assertEqual
             "Addition in query is incorrect"
-            "SELECT (\"age\" + 1) FROM \"People\""
+            "SELECT \"age\" + 1 FROM \"People\""
             (S.parse addition)
             
 testMultiplicationSqLite :: Test
@@ -60,7 +60,7 @@ testMultiplicationSqLite = testCase "Multiplication" assertSelect
         assertSelect :: Assertion
         assertSelect = assertEqual
             "Multiplication in query is incorrect"
-            "SELECT (3 * 4)"
+            "SELECT 3 * 4"
             (S.parse multiplication)
 
 testCurrentDateSqLite :: Test
@@ -280,7 +280,7 @@ testWhereInSelect = testCase "WHERE clause with IN sub-query" assertFrom
             "WHERE clause with IN sub-query is incorrect"
             (  "SELECT * FROM \"People\" "
             ++ "WHERE \"countryId\" IN (SELECT \"countryId\" "
-            ++ "FROM \"Countries\" WHERE \"inhabitants\" >= (\"size\" * 100))"
+            ++ "FROM \"Countries\" WHERE \"inhabitants\" >= \"size\" * 100)"
             )
             (S.parse whereInSelect)
 
@@ -291,8 +291,7 @@ testWhereBetween = testCase "WHERE clause with BETWEEN clause" assertFrom
         assertFrom = assertEqual
             "WHERE clause with BETWEEN clause is incorrect"
             (  "SELECT * FROM \"Countries\" "
-            ++ "WHERE \"inhabitants\" BETWEEN (SELECT \"age\" "
-            ++ "FROM \"People\" WHERE \"firstName\" LIKE '*e*') AND 1000000"
+            ++ "WHERE \"inhabitants\" BETWEEN 10000 AND 1000000"
             )
             (S.parse whereBetween)
  
@@ -310,7 +309,78 @@ testWhereExists = testCase "WHERE clause with EXISTS sub-query" assertFrom
             (S.parse whereExists)
 
 ----------------------------------------
--- GROUP By
+-- ORDER BY
+----------------------------------------
+
+testOrderBy :: Test
+testOrderBy = testCase "ORDER BY clause" assertOrderBy
+    where
+        assertOrderBy :: Assertion
+        assertOrderBy = assertEqual
+            "ORDER BY clause is incorrect"
+            (  "SELECT \"firstName\", \"lastName\" FROM \"People\" "
+            ++ "ORDER BY \"firstName\", \"lastName\""
+            )
+            (S.parse orderByQuery)
+
+testOrderByAlias :: Test
+testOrderByAlias = testCase "ORDER BY alias clause" assertOrderBy
+    where
+        assertOrderBy :: Assertion
+        assertOrderBy = assertEqual
+            "ORDER BY alias clause is incorrect"
+            (  "SELECT \"size\" + \"inhabitants\" AS \"sum\", \"name\" "
+            ++ "FROM \"Countries\" ORDER BY \"sum\""
+            )
+            (S.parse orderBySum)
+
+testOrderByAscDesc :: Test
+testOrderByAscDesc = testCase "ORDER BY clause with ASC and DESC" assertOrderBy
+    where
+        assertOrderBy :: Assertion
+        assertOrderBy = assertEqual
+            "ORDER BY clause with ASC and DESC is incorrect"
+            (  "SELECT \"firstName\", \"lastName\" FROM \"People\" "
+            ++ "ORDER BY \"firstName\" ASC, \"lastName\" DESC"
+            )
+            (S.parse orderByAscDesc)
+
+testOrderByNull :: Test
+testOrderByNull =
+    testCase "ORDER BY clause with NULLS first and last" assertOrderBy
+    where
+        assertOrderBy :: Assertion
+        assertOrderBy = assertEqual
+            "ORDER BY clause with NullS first and last is incorrect"
+            (  "SELECT \"age\", \"passeportNumber\" FROM \"People\" "
+            ++ "ORDER BY \"age\" NULLS FIRST, \"passeportNumber\" NULLS LAST"
+            )
+            (S.parse orderByNull)
+
+testOrderByLimit :: Test
+testOrderByLimit = testCase "ORDER BY with LIMIT clause" assertOrderBy
+    where
+        assertOrderBy :: Assertion
+        assertOrderBy = assertEqual
+            "ORDER BY with LIMIT clause is incorrect"
+            (  "SELECT * FROM \"People\" "
+            ++ "ORDER BY \"firstName\" LIMIT 2"
+            )
+            (S.parse orderByLimit)
+
+testOrderByOffset :: Test
+testOrderByOffset = testCase "ORDER BY with OFFSET clause" assertOrderBy
+    where
+        assertOrderBy :: Assertion
+        assertOrderBy = assertEqual
+            "ORDER BY with OFFSET clause is incorrect"
+            (  "SELECT * FROM \"People\" "
+            ++ "ORDER BY \"firstName\" OFFSET 2"
+            )
+            (S.parse orderByOffset)
+
+----------------------------------------
+-- GROUP BY
 ----------------------------------------
 
 testGroupBy :: Test
@@ -351,7 +421,7 @@ testGroupByComplex = testCase "Complex GROUP BY" assertGroupBy
         assertGroupBy = assertEqual
             "Complex GROUP BY is invalid"
             (  "SELECT \"personId\", \"P\".\"lastName\" AS \"name\", "
-            ++ "(SUM(\"C\".\"size\") * \"P\".\"age\") AS \"weirdFigure\" "
+            ++ "SUM(\"C\".\"size\") * \"P\".\"age\" AS \"weirdFigure\" "
             ++ "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
             ++ "USING (\"personId\") GROUP BY \"personId\", \"P\".\"name\""
             )
@@ -409,6 +479,50 @@ testUnionCombined = testCase "Combined SELECT UNIONs" assertUnion
             ++ "INTERSECT SELECT * FROM \"People\" WHERE \"personId\" = 1)"
             )
             (S.parse unionCombined)
+
+testUnionAll :: Test
+testUnionAll = testCase "SELECT UNION ALL" assertUnion
+    where
+        assertUnion :: Assertion
+        assertUnion = assertEqual
+            "SELECT UNION ALL is incorrect"
+            (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
+            ++ "UNION ALL SELECT * FROM \"People\" WHERE \"personId\" = 2)"
+            )
+            (S.parse unionAllQuery)
+
+testIntersectAll :: Test
+testIntersectAll = testCase "SELECT INTERSECT ALL" assertUnion
+    where
+        assertUnion :: Assertion
+        assertUnion = assertEqual
+            "SELECT INTERSECT ALL is incorrect"
+            (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
+            ++ "INTERSECT ALL SELECT * FROM \"People\" WHERE \"personId\" = 2)"
+            )
+            (S.parse intersectAllQuery)
+
+testExcept :: Test
+testExcept = testCase "SELECT EXCEPT" assertUnion
+    where
+        assertUnion :: Assertion
+        assertUnion = assertEqual
+            "SELECT EXCEPT is incorrect"
+            (  "(SELECT * FROM \"People\" "
+            ++ "EXCEPT SELECT * FROM \"People\" WHERE \"personId\" = 1)"
+            )
+            (S.parse exceptQuery)
+
+testExceptAll :: Test
+testExceptAll = testCase "SELECT EXCEPT ALL" assertUnion
+    where
+        assertUnion :: Assertion
+        assertUnion = assertEqual
+            "SELECT EXCEPT ALL is incorrect"
+            (  "(SELECT * FROM \"People\" "
+            ++ "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1)"
+            )
+            (S.parse exceptAllQuery)
             
 ----------------------------------------
 -- PostgreSQL
@@ -471,6 +585,12 @@ tests = testGroup "Select"
         , testWhereInSelect
         , testWhereBetween
         , testWhereExists
+        , testOrderBy
+        , testOrderByAlias
+        , testOrderByAscDesc
+        , testOrderByNull
+        , testOrderByLimit
+        , testOrderByOffset
         , testGroupBy
         , testGroupBySum
         , testGroupByAlias
@@ -479,6 +599,10 @@ tests = testGroup "Select"
         , testHavingComplex
         , testUnion
         , testUnionCombined
+        , testUnionAll
+        , testIntersectAll
+        , testExcept
+        , testExceptAll
         , testRandomSqLite
         ]
     , testGroup "PostgreSQL"

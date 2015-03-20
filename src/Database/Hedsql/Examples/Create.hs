@@ -80,10 +80,10 @@ countries :: Table a
 countries =
     createTable
         "Countries"
-        [ col "countryId"   integer       /++ primary True
-        , col "name"        (varchar 256) /++ [notNull, unique]
-        , col "size"        integer
-        , col "inhabitants" integer
+        [ wrap  (col "countryId"   integer)       /++ primary True
+        , wrap  (col "name"        (varchar 256)) /++ [notNull, unique]
+        , wrap $ col "size"        integer
+        , wrap $ col "inhabitants" integer
         ]
 
 {-|
@@ -95,6 +95,7 @@ CREATE TABLE "People" (
    "firstName"  VARCHAR(256) NOT NULL,
    "lastName"   VARCHAR(256) NOT NULL,
    "age"        INTEGER      CHECK ("age" > -1),
+   "married"    BOOLEAN      DEFAULT(FALSE), NOT NULL
    "father"     INTEGER      REFERENCES "People"("personId")
    "passportNo" VARCHAR(256) UNIQUE,
    "countryId"  INTEGER      REFERENCES "Countries"("countryId")
@@ -109,6 +110,7 @@ CREATE TABLE "People" (
    "firstName"  varchar(256) NOT NULL,
    "lastName"   varchar(256) NOT NULL,
    "age"        integer      CHECK ("age" > -1),
+   "married"    boolean      DEFAULT(FALSE), NOT NULL
    "passportNo" varchar(256) UNIQUE,
    "father"     integer      REFERENCES "People"("personId")
    "countryId"  integer      REFERENCES "Countries"("countryId")
@@ -119,28 +121,33 @@ people :: Table a
 people =
     createTable
         "People"
-        [ col "personId"   integer       /++ primary True
-        , col "title"      (char 2)      /++ defaultValue (value "Ms")
-        , col "firstName"  (varchar 256) /++ notNull
-        , col "lastName"   (varchar 256) /++ notNull
-        , col "age"        integer       /++ check ("age" /> (-1::Int))
-        , col "passportNo" (varchar 256) /++ unique
-        , col "father"     integer       /++ foreignKey "People" "personId"
-        , col "countryId"  integer       /++ foreignKey "Countries" "countryId"
+        [ wrap (col "personId"   integer)       /++ primary True
+        , wrap (col "title"      (char 2))      /++ defaultValue (value "Ms")
+        , wrap (col "firstName"  (varchar 256)) /++ notNull
+        , wrap (col "lastName"   (varchar 256)) /++ notNull
+        , wrap age /++ check (age /> value (-1::Int))
+        , wrap (col "married"    boolean)       /++ [ defaultValue (value False)
+                                                    , notNull
+                                                    ]
+        , wrap (col "passportNo" (varchar 256)) /++ unique
+        , wrap (col "father"     integer) /++ foreignKey "People" "personId"
+        , wrap (col "countryId"  integer) /++ foreignKey "Countries" "countryId"
         ]
+    where
+        age = col "age" integer
 ----------------------------------------
 -- Basics
 ----------------------------------------
 
 -- | > CREATE TABLE "People" ("firstName" varchar(256))        
 simpleTable :: Table a
-simpleTable = createTable "People" [col "firstName" $ varchar 256]
+simpleTable = createTable "People" [wrap (col "firstName" $ varchar 256)]
       
 -- | CREATE TABLE "People" ("country" integer DEFAULT(1))
 defaultVal :: Table a
 defaultVal = createTable
     "People"
-    [col "country" integer /++ defaultValue (value (1::Int))]
+    [wrap (col "country" integer) /++ defaultValue (value (1::Int))]
 
 ----------------------------------------
 -- Constraints
@@ -159,7 +166,7 @@ PostgreSQL:
 -}
 primaryKeyCol :: Table a
 primaryKeyCol =
-    createTable "People" [col "personId" integer /++ primary False]
+    createTable "People" [wrap (col "personId" integer) /++ primary False]
 
 {-|
 Maria DB and SqLite:
@@ -170,7 +177,7 @@ PostgreSQL:
 -}
 primaryKeyColAuto :: Table a
 primaryKeyColAuto =
-    createTable "People" [col "personId" integer /++ primary True]
+    createTable "People" [wrap (col "personId" integer) /++ primary True]
 
 {-|
 CREATE TABLE "People" (
@@ -183,7 +190,8 @@ primaryKeyTable :: Table a
 primaryKeyTable =
     createTable
         "People"
-        (cols [("firstName", varchar 256), ("lastName", varchar 256)])
+        [ wrap $ col "firstName" (varchar 256)
+        , wrap $ col "lastName" (varchar 256)]
     /++ tableConstraint "pk" (primaryT ["firstName", "lastName"])
 
 --------------------
@@ -193,7 +201,7 @@ primaryKeyTable =
 -- | CREATE TABLE "People" ("passportNo" varchar(256) UNIQUE)
 createUnique :: Table a
 createUnique =
-    createTable "People" [col "passportNo" (varchar 256) /++ unique]
+    createTable "People" [wrap (col "passportNo" (varchar 256)) /++ unique]
     
 {-|
 CREATE TABLE "People" (
@@ -207,8 +215,8 @@ createUniqueT =
     createTable "People" cs /++ tableConstraint "" (uniqueT cs)
     where
         cs =
-            [ col "firstName" $ varchar 256
-            , col "lastName"  $ varchar 256
+            [ wrap $ col "firstName" $ varchar 256
+            , wrap $ col "lastName"  $ varchar 256
             ]
 
 --------------------
@@ -226,8 +234,9 @@ noNulls =
     createTable "People" cs
     where
         cs =
-            [ col "firstName" (varchar 256) /++ colConstraint "no_null" notNull
-            , col "lastName"  (varchar 256) /++ notNull
+            [ wrap (col "firstName" (varchar 256))
+                /++ colConstraint "no_null" notNull
+            , wrap (col "lastName"  (varchar 256)) /++ notNull
             ]
 
 --------------------
@@ -241,7 +250,7 @@ createFK :: Table a
 createFK =
     createTable
         "People"
-        [col "countryId" integer /++ foreignKey "Countries" "countryId"]
+        [wrap (col "countryId" integer) /++ foreignKey "Countries" "countryId"]
 
 --------------------
 -- CHECK
@@ -252,7 +261,9 @@ createCheck :: Table a
 createCheck =
     createTable
         "People"
-        [col "age" integer /++ check ("age" /> (-1::Int))]
+        [(wrap age) /++ check (age /> value (-1::Int))]
+    where
+        age = col "age" integer
         
 {-|            
 CREATE TABLE "People" (
@@ -265,13 +276,14 @@ createChecks :: Table a
 createChecks =
     createTable
         "People"
-        (cols
-        [ ("lastName", varchar 256)
-        , ("age"     , integer    )
-        ])
+        [ wrap lastName
+        , wrap age
+        ]
     /++ c1
     where
+        age = col "age"integer
+        lastName = col "lastName" (varchar 256)
         c1 =
             tableConstraint "checks" $
-                  checkT $ ("age" /> (-1::Int))
-            `and_`("lastName"    /<> value "")
+                  checkT $
+                      (age /> value (-1::Int)) `and_` (lastName /<> value "")

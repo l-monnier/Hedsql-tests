@@ -23,17 +23,6 @@ import qualified Database.Hedsql.SqLite     as S
 -- All vendors
 ----------------------------------------
 
-testJulius :: Test
-testJulius = testCase "Insert example Julius Ceasar" assertInsert
-    where
-        assertInsert :: Assertion
-        assertInsert = assertEqual
-            "Insert of Julius Ceasar is incorrect"
-            (  "INSERT INTO \"People\" "
-            ++ "VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, NULL, 2, 2)"
-            )
-            (S.parse juliusCeasar)
-
 testWithCols :: Test
 testWithCols = testCase "Insert with columns names" assertInsert
     where
@@ -48,6 +37,21 @@ testWithCols = testCase "Insert with columns names" assertInsert
             (S.parse withCols)
 
 ----------------------------------------
+-- SqLite
+----------------------------------------
+
+testJulius :: Test
+testJulius = testCase "Insert example Julius Ceasar" assertInsert
+    where
+        assertInsert :: Assertion
+        assertInsert = assertEqual
+            "Insert of Julius Ceasar is incorrect"
+            (  "INSERT INTO \"People\" "
+            ++ "VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)"
+            )
+            (S.parse juliusCeasar)
+
+----------------------------------------
 -- PostgreSQL
 ----------------------------------------
 
@@ -58,7 +62,8 @@ testDefaultValPostgreSQL = testCase "Insert with a DEFAULT value" assertInsert
         assertInsert = assertEqual
             "Insert with a DEFAULT value is incorrect"
             (  "INSERT INTO \"People\" "
-            ++ "VALUES (NULL, DEFAULT, 'Julius', 'Ceasar', 2000, NULL, NULL, 2)"
+            ++ "VALUES (NULL, DEFAULT, 'Julius', 'Ceasar', 2000, "
+            ++ "TRUE, NULL, NULL, 2)"
             )
             (P.parse defaultValPostgreSQL)
 
@@ -84,9 +89,11 @@ testMultiValsPostgreSQL = testCase "Multiple inserts" assertInsert
 tests :: Test
 tests = testGroup "Insert"
     [ testGroup "AllVendors"
-        [ testJulius
-        , testWithCols
+        [ testWithCols
         ]
+    , testGroup "SqLite"
+        [ testJulius
+        ] 
     , testGroup "PostgreSQL"
         [ testDefaultValPostgreSQL
         , testMultiValsPostgreSQL
