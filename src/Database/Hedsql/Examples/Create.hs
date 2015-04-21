@@ -76,7 +76,7 @@ CREATE TABLE "Countries" (
 )
 @
 -}
-countries :: Table a
+countries :: Create a
 countries =
     createTable
         "Countries"
@@ -117,7 +117,7 @@ CREATE TABLE "People" (
 )
 @
 -}
-people :: Table a
+people :: Create a
 people =
     createTable
         "People"
@@ -140,11 +140,11 @@ people =
 ----------------------------------------
 
 -- | > CREATE TABLE "People" ("firstName" varchar(256))        
-simpleTable :: Table a
+simpleTable :: Create a
 simpleTable = createTable "People" [wrap (col "firstName" $ varchar 256)]
       
 -- | CREATE TABLE "People" ("country" integer DEFAULT(1))
-defaultVal :: Table a
+defaultVal :: Create a
 defaultVal = createTable
     "People"
     [wrap (col "country" integer) /++ defaultValue (value (1::Int))]
@@ -164,7 +164,7 @@ Maria DB and SqLite:
 PostgreSQL:
 > CREATE TABLE "People" ("personId" integer PRIMARY KEY)
 -}
-primaryKeyCol :: Table a
+primaryKeyCol :: Create a
 primaryKeyCol =
     createTable "People" [wrap (col "personId" integer) /++ primary False]
 
@@ -175,7 +175,7 @@ Maria DB and SqLite:
 PostgreSQL:
 > CREATE TABLE "People" ("id" serial PRIMARY KEY)
 -}
-primaryKeyColAuto :: Table a
+primaryKeyColAuto :: Create a
 primaryKeyColAuto =
     createTable "People" [wrap (col "personId" integer) /++ primary True]
 
@@ -186,7 +186,7 @@ CREATE TABLE "People" (
     CONSTRAINT "pk" PRIMARY KEY ("firstName", "lastName")
 )
 -}
-primaryKeyTable :: Table a
+primaryKeyTable :: Create a
 primaryKeyTable =
     createTable
         "People"
@@ -199,7 +199,7 @@ primaryKeyTable =
 --------------------
 
 -- | CREATE TABLE "People" ("passportNo" varchar(256) UNIQUE)
-createUnique :: Table a
+createUnique :: Create a
 createUnique =
     createTable "People" [wrap (col "passportNo" (varchar 256)) /++ unique]
     
@@ -210,7 +210,7 @@ CREATE TABLE "People" (
     UNIQUE ("firstName", "lastName")
 )
 -}
-createUniqueT :: Table a
+createUniqueT :: Create a
 createUniqueT =
     createTable "People" cs /++ tableConstraint "" (uniqueT cs)
     where
@@ -229,7 +229,7 @@ CREATE TABLE "People" (
     "lastName"  varchar(256) NOT NULL
 )
 -}
-noNulls :: Table a
+noNulls :: Create a
 noNulls =
     createTable "People" cs
     where
@@ -246,7 +246,7 @@ noNulls =
 {-|
 CREATE TABLE "People" ("countryId" integer REFERENCES "Countries"("countryId"))
 -}
-createFK :: Table a
+createFK :: Create a
 createFK =
     createTable
         "People"
@@ -257,11 +257,11 @@ createFK =
 --------------------
      
 -- | CREATE TABLE "People" ("age" integer CHECK ("age" > -1))
-createCheck :: Table a
+createCheck :: Create a
 createCheck =
     createTable
         "People"
-        [(wrap age) /++ check (age /> value (-1::Int))]
+        [wrap age /++ check (age /> intVal (-1))]
     where
         age = col "age" integer
         
@@ -272,7 +272,7 @@ CREATE TABLE "People" (
     CONSTRAINT "checks" CHECK ("age" > -1 AND "lastName" <> '')
 )
 -}
-createChecks :: Table a
+createChecks :: Create a
 createChecks =
     createTable
         "People"
@@ -282,8 +282,8 @@ createChecks =
     /++ c1
     where
         age = col "age"integer
-        lastName = col "lastName" (varchar 256)
+        lastName = col "lastName" $ varchar 256
         c1 =
             tableConstraint "checks" $
                   checkT $
-                      (age /> value (-1::Int)) `and_` (lastName /<> value "")
+                      (age /> intVal (-1)) `and_` (lastName /<> value "")

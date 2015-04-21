@@ -25,9 +25,9 @@ import Database.Hedsql.SqLite
 --------------------------------------------------------------------------------
 
 -- | > DROP TABLE "People"
-dropTableStmt :: DropTable a
+dropTableStmt :: Drop a
 dropTableStmt = dropTable "People"
 
 -- | > DROP IF EXISTS "People"
-dropTableIfExistsStmt :: DropTable a
+dropTableIfExistsStmt :: Drop a
 dropTableIfExistsStmt = dropTableIfExists "People"

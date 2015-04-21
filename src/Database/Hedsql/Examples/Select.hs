@@ -49,12 +49,12 @@ module Database.Hedsql.Examples.Select
     , orderByQuery
     , orderBySum
     , orderByAscDesc
-    , orderByLimit
+    , Database.Hedsql.Examples.Select.orderByLimit
     , orderByNull
-    , orderByOffset
+    , Database.Hedsql.Examples.Select.orderByOffset
     
       -- ** GROUP BY
-    , selectGroupBy
+    , Database.Hedsql.Examples.Select.selectGroupBy
     , groupBySum
     , groupByAlias
     , groupByComplex
@@ -353,7 +353,7 @@ whereExists =
 {-|
 > SELECT "firstName", "lastName" FROM "People" ORDER BY "firstName, "lastName"
 -}                        
-orderByQuery :: Select [[Text]] a
+orderByQuery :: Select [[String]] a
 orderByQuery =
         select cs
     /++ from "People"
@@ -383,7 +383,7 @@ orderBySum =
 > FROM "People"
 > ORDER BY "firstName" ASC, "lastName" DESC
 -}
-orderByAscDesc :: Select [[Text]] a
+orderByAscDesc :: Select [[String]] a
 orderByAscDesc =
         select [firstName, lastName]
     /++ from "People"
@@ -397,7 +397,7 @@ orderByAscDesc =
 > FROM "People"
 > ORDER BY "age" NULLS FIRST, "passeportNumber" NULLS LAST"
 -}
-orderByNull :: Select [[Numeric]] a
+orderByNull :: Select [[Int]] a
 orderByNull =
         select [age, passeport]
     /++ from "People"
@@ -425,7 +425,7 @@ orderByOffset =
 --------------------
 
 -- | > SELECT "age" FROM "People" GROUP BY "age"
-selectGroupBy :: Select [Numeric] a
+selectGroupBy :: Select [Int] a
 selectGroupBy =
         select age
     /++ from "People"
@@ -443,7 +443,7 @@ groupBySum =
         lastName = wrapColRef $ col "lastName" (varchar 256)
 
 -- | > SELECT "lastName" AS "name" FROM "People" GROUP BY "name"
-groupByAlias :: Select [Text] a
+groupByAlias :: Select [String] a
 groupByAlias =
         select name
     /++ from "People"
@@ -458,7 +458,7 @@ SELECT
     "P"."lastName" AS "name",
     SUM("C"."size") * "P"."age" AS "weirdFigure"
 FROM "People" AS "P" LEFT JOIN "Countries" AS "C" USING ("personId")
-GROUP BY "personId", "P"."name"
+GROUP BY "personId", "name"
 @
 -}
 groupByComplex :: Select [[Undefined]] a
@@ -629,13 +629,13 @@ isNotUnknownQuery =
 --------------------
 
 -- | > SELECT "age" + 1 FROM "People"
-addition :: Select [Numeric] a
+addition :: Select [Int] a
 addition =
         select (col "age" integer /+ intVal 1)
     /++ from "People"
     
 -- | > SELECT 3 * 4
-multiplication :: Select [Numeric] a
+multiplication :: Select [Int] a
 multiplication = select $ intVal 3 /* intVal 4
 
 {-|
@@ -655,14 +655,14 @@ MariaDB
 PostgreSQL & SqLite
 > SELECT random()
 -}
-selectRandom :: Select [Numeric] a
+selectRandom :: Num b => Select [b] a
 selectRandom = select random
 
 --------------------
 -- Combined queries
 --------------------
 
--- | Select Undefineds a person by its primary key.
+-- | Select a person by its primary key.
 selectId :: Int -> Select [[Undefined]] a
 selectId id' =
         select (//*)
@@ -670,53 +670,60 @@ selectId id' =
     /++ where_ (col "personId" integer /== value id') 
 
 {-|
-> (SELECT * FROM "People" WHERE "personId" = 1
-> UNION SELECT * FROM "People" WHERE "personId" = 2)
+> SELECT * FROM "People" WHERE "personId" = 1
+> UNION
+> SELECT * FROM "People" WHERE "personId" = 2
 -}
-unionQuery :: CombinedQuery a        
-unionQuery = union (wrap $ selectId 1) (wrap $ selectId 2)
+unionQuery :: Select [[Undefined]] a        
+unionQuery = union (selectId 1) $ selectId 2
 
 {-|
-> ((SELECT * FROM "People" WHERE "personId" = 1
-> UNION SELECT * FROM "People" WHERE "personId" = 2)
-> INTERSECT SELECT * FROM "People" WHERE "personId" = 1)
+> (SELECT * FROM "People" WHERE "personId" = 1
+> UNION
+> SELECT * FROM "People" WHERE "personId" = 2)
+> INTERSECT
+> SELECT * FROM "People" WHERE "personId" = 1
 -}
-unionCombined :: CombinedQuery a
+unionCombined :: Select [[Undefined]] a
 unionCombined =
     intersect
         unionQuery
-        (wrap $ select (//*)
+        (select (//*)
             /++ from "People"
             /++ where_ (col "personId" integer /== intVal 1))          
 
 {-|
-> (SELECT * FROM "People" WHERE "personId" = 1
-> UNION ALL SELECT * FROM "People" WHERE "personId" = 2)
+> SELECT * FROM "People" WHERE "personId" = 1
+> UNION ALL
+> SELECT * FROM "People" WHERE "personId" = 2
 -}
-unionAllQuery :: CombinedQuery a
-unionAllQuery = unionAll (wrap $ selectId 1) (wrap $ selectId 2) 
+unionAllQuery :: Select [[Undefined]] a
+unionAllQuery = unionAll (selectId 1) $ selectId 2 
 
 {-|
-> (SELECT * FROM "People" WHERE "personId" = 1
-> INTERSECT ALL SELECT * FROM "People" WHERE "personId" = 2)
+> SELECT * FROM "People" WHERE "personId" = 1
+> INTERSECT ALL
+> SELECT * FROM "People" WHERE "personId" = 2
 -}
-intersectAllQuery :: CombinedQuery a
-intersectAllQuery = intersectAll (wrap $ selectId 1) (wrap $ selectId 2) 
+intersectAllQuery :: Select [[Undefined]] a
+intersectAllQuery = intersectAll (selectId 1) $ selectId 2
 
 {-|
-> (SELECT * FROM "People"
-> EXCEPT SELECT * FROM "People" WHERE "personId" = 1)
+> SELECT * FROM "People"
+> EXCEPT
+> SELECT * FROM "People" WHERE "personId" = 1
 -}
-exceptQuery :: CombinedQuery a
-exceptQuery = except (wrap $ select (//*) /++ from "People") (wrap $ selectId 1) 
+exceptQuery :: Select [[Undefined]] a
+exceptQuery = except (select (//*) /++ from "People") $ selectId 1
 
 {-|
-> (SELECT * FROM "People"
-> EXCEPT ALL SELECT * FROM "People" WHERE "personId" = 1)
+> SELECT * FROM "People"
+> EXCEPT ALL
+> SELECT * FROM "People" WHERE "personId" = 1
 -}
-exceptAllQuery :: CombinedQuery a
+exceptAllQuery :: Select [[Undefined]] a
 exceptAllQuery =
-    exceptAll (wrap $ select (//*) /++ from "People") (wrap $ selectId 1) 
+    exceptAll (select (//*) /++ from "People") $ selectId 1
 
 ----------------------------------------
 -- PostgreSQL

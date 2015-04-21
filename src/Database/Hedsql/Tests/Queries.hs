@@ -423,7 +423,7 @@ testGroupByComplex = testCase "Complex GROUP BY" assertGroupBy
             (  "SELECT \"personId\", \"P\".\"lastName\" AS \"name\", "
             ++ "SUM(\"C\".\"size\") * \"P\".\"age\" AS \"weirdFigure\" "
             ++ "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
-            ++ "USING (\"personId\") GROUP BY \"personId\", \"P\".\"name\""
+            ++ "USING (\"personId\") GROUP BY \"personId\", \"name\""
             )
             (S.parse groupByComplex)
 
@@ -463,8 +463,8 @@ testUnion = testCase "SELECT UNION" assertUnion
         assertUnion :: Assertion
         assertUnion = assertEqual
             "SELECT UNION is incorrect"
-            (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2)"
+            (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
+            ++ "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
             (S.parse unionQuery)
 
@@ -474,9 +474,9 @@ testUnionCombined = testCase "Combined SELECT UNIONs" assertUnion
         assertUnion :: Assertion
         assertUnion = assertEqual
             "Combined SELECT UNIONs are incorrect"
-            (  "((SELECT * FROM \"People\" WHERE \"personId\" = 1 "
+            (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
             ++ "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2) "
-            ++ "INTERSECT SELECT * FROM \"People\" WHERE \"personId\" = 1)"
+            ++ "INTERSECT SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse unionCombined)
 
@@ -486,8 +486,8 @@ testUnionAll = testCase "SELECT UNION ALL" assertUnion
         assertUnion :: Assertion
         assertUnion = assertEqual
             "SELECT UNION ALL is incorrect"
-            (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "UNION ALL SELECT * FROM \"People\" WHERE \"personId\" = 2)"
+            (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
+            ++ "UNION ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
             (S.parse unionAllQuery)
 
@@ -497,8 +497,8 @@ testIntersectAll = testCase "SELECT INTERSECT ALL" assertUnion
         assertUnion :: Assertion
         assertUnion = assertEqual
             "SELECT INTERSECT ALL is incorrect"
-            (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "INTERSECT ALL SELECT * FROM \"People\" WHERE \"personId\" = 2)"
+            (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
+            ++ "INTERSECT ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
             (S.parse intersectAllQuery)
 
@@ -508,8 +508,8 @@ testExcept = testCase "SELECT EXCEPT" assertUnion
         assertUnion :: Assertion
         assertUnion = assertEqual
             "SELECT EXCEPT is incorrect"
-            (  "(SELECT * FROM \"People\" "
-            ++ "EXCEPT SELECT * FROM \"People\" WHERE \"personId\" = 1)"
+            (  "SELECT * FROM \"People\" "
+            ++ "EXCEPT SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse exceptQuery)
 
@@ -519,8 +519,8 @@ testExceptAll = testCase "SELECT EXCEPT ALL" assertUnion
         assertUnion :: Assertion
         assertUnion = assertEqual
             "SELECT EXCEPT ALL is incorrect"
-            (  "(SELECT * FROM \"People\" "
-            ++ "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1)"
+            (  "SELECT * FROM \"People\" "
+            ++ "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse exceptAllQuery)
             

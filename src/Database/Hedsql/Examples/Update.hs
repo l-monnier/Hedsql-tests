@@ -39,7 +39,7 @@ import qualified Database.Hedsql.PostgreSQL                      as P
 -- | > UPDATE "People" SET "age" = 2050 WHERE "lastName" = 'Ceasar'
 equalTo :: Update a
 equalTo =
-        update "People" [assign (col "age" integer) (value (2050::Int))]
+        update "People" [assign (col "age" integer) $ intVal 2050]
     /++ where_ (col "lastName" (varchar 256) /== value "Ceasar")
 
 {-|    
@@ -48,7 +48,7 @@ UPDATE "People" SET "age" = "age" + 1 WHERE "countryId" IN
 -}
 updateSelect :: Update a
 updateSelect =
-        update "People" [assign age $ age /+ value (1::Int)]
+        update "People" [assign age $ age /+ intVal 1]
     /++ where_ (countryId `in_`subSelect)
     where
         subSelect =
@@ -66,4 +66,4 @@ updateSelect =
 defaultVal :: Update P.PostgreSQL
 defaultVal =
         update "People" [assign "title" default_]
-    /++ where_ (col "personId" integer /== value (1::Int))
+    /++ where_ (col "personId" integer /== intVal 1)
