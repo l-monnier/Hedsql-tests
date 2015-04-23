@@ -18,6 +18,7 @@ module Database.Hedsql.Examples.Drop
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Database.Hedsql.Ext
 import Database.Hedsql.SqLite
 
 --------------------------------------------------------------------------------

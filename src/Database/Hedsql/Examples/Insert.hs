@@ -27,6 +27,7 @@ module Database.Hedsql.Examples.Insert
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import           Database.Hedsql.Ext
 import           Database.Hedsql.SqLite
 import qualified Database.Hedsql.PostgreSQL                      as P
 import           Database.Hedsql.Drivers.PostgreSQL.Constructor
@@ -93,12 +94,14 @@ juliusCeasar =
         , assign lastName   $ stringVal "Ceasar"
         , assign age        $ intVal 2000
         , assign married    $ boolVal True
-        , assign passportNo $ nString
+        , assign passportNo   null
         , assign father     $ intVal 2
         , assign countryId  $ intVal 2
         ]
 
 {-|
+Use the generic 'value' constructor instead of the specialised ones.
+
 MariaDB and PosgreSQL:
 > INSERT INTO "People"
 > VALUES (1, 'Mr', 'Gaius Julius', 'Ceasar', 2000, TRUE, NULL, NULL, 2)
@@ -112,15 +115,15 @@ SqLite:
 gaiusJuliusCeasar :: Insert a
 gaiusJuliusCeasar =
     insertInto "People"
-        [ assign idC        $ intVal 2
-        , assign title      $ stringVal "Mr"
-        , assign firstName  $ stringVal "Gaius Julius"
-        , assign lastName   $ stringVal "Ceasar"
-        , assign age        $ intVal 2000
-        , assign married    $ boolVal True
-        , assign passportNo $ nString
-        , assign father     $ nInt
-        , assign countryId  $ intVal 2
+        [ assign idC        $ value (2::Int)
+        , assign title      $ value "Mr"
+        , assign firstName  $ value "Gaius Julius"
+        , assign lastName   $ value "Ceasar"
+        , assign age        $ value (2000::Int)
+        , assign married    $ value True
+        , assign passportNo   null
+        , assign father       null
+        , assign countryId  $ value (2::Int)
         ]
 
 {-|
@@ -133,13 +136,13 @@ The below statement is going to fail, because the age is below 0.
 falseAge :: Insert a      
 falseAge = 
     insertInto "People"
-        [ assign title      $ nString
+        [ assign title        null
         , assign firstName  $ stringVal "Julius"
         , assign lastName   $ stringVal "Ceasar"
         , assign age        $ intVal (-1)
         , assign married    $ boolVal True
-        , assign passportNo $ nString
-        , assign father     $ nInt
+        , assign passportNo   null
+        , assign father       null
         , assign countryId  $ intVal 2
         ]
 
@@ -159,8 +162,8 @@ withCols =
         , assign firstName   $ value "Julius"
         , assign lastName    $ value "Ceasar"
         , assign age         $ intVal 2000
-        , assign married     $ nBool
-        , assign passportNo  $ nString
+        , assign married       null
+        , assign passportNo    null
         , assign countryId   $ intVal 2
         ]
 
@@ -176,11 +179,11 @@ defaultVal :: Insert a
 defaultVal =
     insertInto
         "People"
-        [ assign "firstName"  $ undefStringVal "Julius"
-        , assign "lastName"   $ undefStringVal "Ceasar"
-        , assign "age"        $ undefNumVal (2000::Int)
-        , assign "passportNo" $ value null
-        , assign "countryId"  $ undefNumVal (2::Int)
+        [ assign "firstName"  $ genQVal "Julius"
+        , assign "lastName"   $ genQVal "Ceasar"
+        , assign "age"        $ genVal (2000::Int)
+        , assign "passportNo"   null
+        , assign "countryId"  $ genVal (2::Int)
         ]
 
 ----------------------------------------
@@ -195,14 +198,14 @@ defaultVal =
 defaultValPostgreSQL :: Insert P.PostgreSQL
 defaultValPostgreSQL = 
     insertInto "People"
-        [ assign idC        $ nInt
+        [ assign idC        $ null
         , assign title      $ value default_
         , assign firstName  $ stringVal "Julius"
         , assign lastName   $ stringVal "Ceasar"
         , assign age        $ intVal 2000
         , assign married    $ boolVal True
-        , assign passportNo $ nString
-        , assign father     $ nInt
+        , assign passportNo   null
+        , assign father       null
         , assign countryId  $ intVal 2
         ]
 

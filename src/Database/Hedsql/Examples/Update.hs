@@ -24,6 +24,7 @@ module Database.Hedsql.Examples.Update
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import           Database.Hedsql.Ext
 import           Database.Hedsql.SqLite
 import           Database.Hedsql.Drivers.PostgreSQL.Constructor
 import qualified Database.Hedsql.PostgreSQL                      as P

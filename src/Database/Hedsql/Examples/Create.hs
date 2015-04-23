@@ -45,6 +45,7 @@ module Database.Hedsql.Examples.Create
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Database.Hedsql.Ext
 import Database.Hedsql.SqLite
 
 --------------------------------------------------------------------------------

@@ -84,6 +84,7 @@ module Database.Hedsql.Examples.Select
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Database.Hedsql.Ext
 import Database.Hedsql.SqLite
 
 import qualified Database.Hedsql.Drivers.PostgreSQL.Constructor as P
@@ -233,6 +234,15 @@ selectSubQuery =
 --------------------
 -- WHERE
 --------------------
+
+{-|
+SELECT using a generic columns and values.
+
+> SELECT "firstName" FROM "People" WHERE "age" > 18
+-}
+selectGen :: Select [Undefined] a
+selectGen =
+    select "firstName" /++ from "People" /++ where_ ("age" /> genVal (18::Int))
 
 -- | > SELECT * FROM "People" AS "P" WHERE "P"."age" > 18;
 whereAlias :: Select [[Undefined]] a
