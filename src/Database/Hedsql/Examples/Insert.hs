@@ -87,7 +87,7 @@ SqLite:
 -}
 juliusCeasar :: Insert a
 juliusCeasar = 
-    insertInto "People"
+    insert "People"
         [ assign idC        $ intVal 1
         , assign title      $ stringVal "Mr"
         , assign firstName  $ stringVal "Julius"
@@ -114,7 +114,7 @@ SqLite:
 -}
 gaiusJuliusCeasar :: Insert a
 gaiusJuliusCeasar =
-    insertInto "People"
+    insert "People"
         [ assign idC        $ value (2::Int)
         , assign title      $ value "Mr"
         , assign firstName  $ value "Gaius Julius"
@@ -135,7 +135,7 @@ The below statement is going to fail, because the age is below 0.
 -}
 falseAge :: Insert a      
 falseAge = 
-    insertInto "People"
+    insert "People"
         [ assign title        null
         , assign firstName  $ stringVal "Julius"
         , assign lastName   $ stringVal "Ceasar"
@@ -156,7 +156,7 @@ INSERT INTO "People"
 -}
 withCols :: Insert a
 withCols = 
-    insertInto
+    insert
         "People"
         [ assign title       $ value "Mr" 
         , assign firstName   $ value "Julius"
@@ -177,7 +177,7 @@ INSERT INTO "People"
 -}
 defaultVal :: Insert a
 defaultVal =
-    insertInto
+    insert
         "People"
         [ assign "firstName"  $ genQVal "Julius"
         , assign "lastName"   $ genQVal "Ceasar"
@@ -197,7 +197,7 @@ defaultVal =
 -}
 defaultValPostgreSQL :: Insert P.PostgreSQL
 defaultValPostgreSQL = 
-    insertInto "People"
+    insert "People"
         [ assign idC        $ null
         , assign title      $ value default_
         , assign firstName  $ stringVal "Julius"
@@ -220,7 +220,7 @@ INSERT INTO "People"
 -}
 --multiValsPostgreSQL :: Insert P.PostgreSQL
 --multiValsPostgreSQL = 
---    insertInto
+--    insert
 --        "People"
 --        ["title", "firstName", "lastName", "age", "passportNo", "countryId"]
 --        [

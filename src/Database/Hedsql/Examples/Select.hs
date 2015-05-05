@@ -262,10 +262,10 @@ whereAlias =
 leftJoinWhere :: Select [[Undefined]] a
 leftJoinWhere =
         select (//*)
-    /++ from (leftJoin people countries joinClause)
+    /++ from (leftJoin people countries joinC)
     /++ where_ (countries/. col "name" (varchar 256) /== value "Italy")
     where
-        joinClause = people/.countryId /== countries/.countryId
+        joinC = people/.countryId /== countries/.countryId
         countries = table "Countries"
         people = table "People"
         countryId = colRef "countryId"
@@ -293,7 +293,9 @@ whereInValues :: Select [[Undefined]] a
 whereInValues =
         select (//*)
     /++ from "Countries"
-    /++ where_ (col "name" (varchar 256) `in_` values ["Italy", "Switzerland"])
+    /++ where_ (col "name" (varchar 256) `in_` cs)
+    where
+        cs = colRef $ map genQVal ["Italy", "Switzerland"]
 
 {-|
 @
@@ -329,11 +331,6 @@ whereBetween =
         (col "inhabitants" integer)
         (intVal 10000)
         (intVal 1000000))
-    where
-        query =
-                select (col "age" integer)
-            /++ from "People"
-            /++ where_ (col "firstName" (varchar 256) `like` value "*e*")
 
 {-|
 @
@@ -381,7 +378,7 @@ orderByQuery =
 -}
 orderBySum :: Select [[Undefined]] a
 orderBySum =
-        select [sum', wrapColRef "name"]
+        select [sum', colRefWrap "name"]
     /++ from "Countries"
     /++ orderBy sum'
     where
@@ -424,7 +421,7 @@ orderByLimit =
     /++ (orderBy "firstName" /++ limit 2)
 
 -- | > SELECT * FROM "People" ORDER BY "firstName" OFFSET 2
---orderByOffset :: Select [[Undefined]] a
+orderByOffset :: Select [[Undefined]] a
 orderByOffset =
         select (//*)
     /++ from "People"
@@ -446,11 +443,11 @@ selectGroupBy =
 -- | > SELECT "lastName", sum("age") FROM "People" GROUP BY "lastName";
 groupBySum :: Select [[Undefined]] a
 groupBySum =
-        select [lastName, wrapColRef $ sum_ $ col "age" integer]
+        select [lastName, colRefWrap $ sum_ $ col "age" integer]
     /++ from "People"
     /++ groupBy lastName
     where
-        lastName = wrapColRef $ col "lastName" (varchar 256)
+        lastName = colRefWrap $ col "lastName" (varchar 256)
 
 -- | > SELECT "lastName" AS "name" FROM "People" GROUP BY "name"
 groupByAlias :: Select [String] a
@@ -473,14 +470,14 @@ GROUP BY "personId", "name"
 -}
 groupByComplex :: Select [[Undefined]] a
 groupByComplex =
-         select [wrapColRef personId, name, weird]
+         select [colRefWrap personId, name, weird]
      /++ from (leftJoin people countries personId)
-     /++ groupBy [wrapColRef personId, name]
+     /++ groupBy [colRefWrap personId, name]
      where
-         name = wrapColRef $ (people/."lastName") `as_` "name"
+         name = colRefWrap $ (people/."lastName") `as_` "name"
          personId = toCol "personId"
          age = people /. col "age" integer
-         weird = wrapColRef $ (sum_ (countries /. col "size" integer) /* age)
+         weird = colRefWrap $ (sum_ (countries /. col "size" integer) /* age)
                     `as_` "weirdFigure"
          people = table "People" `alias` "P"
          countries = table "Countries" `alias` "C"
@@ -491,11 +488,11 @@ groupByComplex =
 -}
 groupBySumHaving :: Select [[Undefined]] a
 groupBySumHaving =
-        select [lastName, wrapColRef sumAge]
+        select [lastName, colRefWrap sumAge]
     /++ from "People"
     /++ (groupBy lastName /++ having (sumAge /> intVal 18))
     where
-         lastName = wrapColRef "lastName"
+         lastName = colRefWrap "lastName"
          sumAge = sum_ $ col "age" integer
 
 {-|
@@ -509,10 +506,10 @@ HAVING SUM("P"."age" * "C"."size") > 5000000
 -}
 havingComplex :: Select [[Undefined]] a       
 havingComplex =
-         select [wrapColRef personId, wrapColRef name, wrap weird]
+         select [colRefWrap personId, colRefWrap name, wrap weird]
      /++ from (leftJoin people countries personId)
      /++ where_ (personId /> intVal 2)
-     /++ ( groupBy [wrapColRef personId, wrap name, wrap age]
+     /++ ( groupBy [colRefWrap personId, wrap name, wrap age]
      /++   having (sum_ (age /* size) /> intVal 5000000)
          )
      where
@@ -665,7 +662,7 @@ MariaDB
 PostgreSQL & SqLite
 > SELECT random()
 -}
-selectRandom :: Num b => Select [b] a
+selectRandom :: Select [Int] a
 selectRandom = select random
 
 --------------------
@@ -742,7 +739,7 @@ exceptAllQuery =
 -- | > SELECT DISTINCT ON ("firstName") * FROM "People" ORDER BY "age"
 distinctOnSelect :: Select [[Undefined]] Pg.PostgreSQL
 distinctOnSelect =
-        P.selectDistinctOn [wrapColRef "firstName"] (//*)
+        P.selectDistinctOn [colRefWrap "firstName"] (//*)
     /++ from "People"
     /++ orderBy "age"
     
