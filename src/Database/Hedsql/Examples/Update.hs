@@ -38,24 +38,24 @@ import qualified Database.Hedsql.PostgreSQL                      as P
 ----------------------------------------
         
 -- | > UPDATE "People" SET "age" = 2050 WHERE "lastName" = 'Ceasar'
-equalTo :: Update a
-equalTo =
-        update "People" [assign (col "age" integer) $ intVal 2050]
-    /++ where_ (col "lastName" (varchar 256) /== value "Ceasar")
+equalTo :: UpdateStmt a
+equalTo = do
+    update "People" [assign (col "age" integer) $ intVal 2050]
+    where_ (col "lastName" (varchar 256) /== value "Ceasar")
 
 {-|    
 UPDATE "People" SET "age" = "age" + 1 WHERE "countryId" IN
   (SELECT "countryId" FROM "Countries" WHERE "name" = 'Italy')
 -}
-updateSelect :: Update a
-updateSelect =
-        update "People" [assign age $ age /+ intVal 1]
-    /++ where_ (countryId `in_`subSelect)
+updateSelect :: UpdateStmt a
+updateSelect = do
+    update "People" [assign age $ age /+ intVal 1]
+    where_ (countryId `in_` execStmt subSelect)
     where
-        subSelect =
-                select countryId
-            /++ from "Countries"
-            /++ where_ (col "name" (varchar 256) /== value "Italy")
+        subSelect = do
+            select countryId
+            from "Countries"
+            where_ (col "name" (varchar 256) /== value "Italy")
         countryId = col "countryId" (varchar 256)
         age = col "age" integer
 
@@ -64,7 +64,7 @@ updateSelect =
 ----------------------------------------
             
 -- | > UPDATE "People" SET "title" = DEFAULT WHERE "personId" = 1
-defaultVal :: Update P.PostgreSQL
-defaultVal =
-        update "People" [assign "title" default_]
-    /++ where_ (col "personId" integer /== intVal 1)
+defaultVal :: UpdateStmt P.PostgreSQL
+defaultVal = do
+    update "People" [assign "title" default_]
+    where_ (col "personId" integer /== intVal 1)

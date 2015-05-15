@@ -1,5 +1,5 @@
 {-|
-Module      : Hedsql/Common/Parser/Queries/Select.hs
+Module      : Hedsql/Common/Parser/Queries/Query.hs
 Description : Collection of SELECT queries.
 Copyright   : (c) Leonard Monnier, 2014
 License     : GPL-3
@@ -103,12 +103,16 @@ import qualified Database.Hedsql.PostgreSQL                     as Pg
 --------------------
 
 -- | > SELECT * FROM "People"
-selectAll :: Select [[Undefined]] a
-selectAll = select (//*) /++ from "People"
+selectAll :: Query [[Undefined]] a
+selectAll = do
+    select (//*)
+    from "People"
 
 -- | > SELECT DISTINCT "firstName" FROM "People"
-distinctSelect :: Select [Undefined] a
-distinctSelect = selectDistinct "firstName" /++ from "People"
+distinctSelect :: Query [Undefined] a
+distinctSelect = do
+    selectDistinct "firstName"
+    from "People"
 
 --------------------
 -- FROM
@@ -118,63 +122,65 @@ distinctSelect = selectDistinct "firstName" /++ from "People"
 --------------------
 
 -- | > SELECT * FROM "People" CROSS JOIN "Countries"
-fromCrossJoin :: Select [[Undefined]] a
-fromCrossJoin =  select (//*) /++  from ("People" `crossJoin` "Countries")
+fromCrossJoin :: Query [[Undefined]] a
+fromCrossJoin = do
+    select (//*)
+    from $ "People" `crossJoin` "Countries"
 
 {-|
 > SELECT *
 > FROM "People"
 >   INNER JOIN "Countries" ON "People"."countryId" = "Countries"."countryId"
 -}
-fromInnerJoinOn :: Select [[Undefined]] a
-fromInnerJoinOn =
-        select (//*)
-    /++ from (innerJoin "People" "Countries"
-            $ "People" /. "countryId" /== "Countries" /. "countryId")
+fromInnerJoinOn :: Query [[Undefined]] a
+fromInnerJoinOn = do
+    select (//*)
+    from $ innerJoin "People" "Countries" $ "People" /. "countryId" /== "Countries" /. "countryId"
 
 -- | > SELECT * FROM "People" INNER JOIN "Countries" USING ("country")
-fromInnerJoinUsing :: Select [[Undefined]] a
-fromInnerJoinUsing =
-    select (//*) /++ from (innerJoin "People" "Countries" "countryId")
+fromInnerJoinUsing :: Query [[Undefined]] a
+fromInnerJoinUsing = do
+    select (//*)
+    from $ innerJoin "People" "Countries" "countryId"
 
 -- | > SELECT * FROM "People" NATURAL INNER JOIN "Countries"
-fromNaturalInnerJoin :: Select [[Undefined]] a
-fromNaturalInnerJoin =
-    select (//*) /++ from ("People" `naturalInnerJoin` "Countries")
+fromNaturalInnerJoin :: Query [[Undefined]] a
+fromNaturalInnerJoin = do
+    select (//*)
+    from $ "People" `naturalInnerJoin` "Countries"
 
 {-|
 > SELECT * FROM "People" LEFT JOIN "Countries"
 > ON "People"."countryId" = "Countries"."countryId"
 -}
-fromLeftJoinOn :: Select [[Undefined]] a
-fromLeftJoinOn =
-        select (//*)
-    /++ from (leftJoin "People" "Countries"
-            $ "People"/."countryId" /== "Countries"/."countryId") 
+fromLeftJoinOn :: Query [[Undefined]] a
+fromLeftJoinOn = do
+    select (//*)
+    from $ leftJoin "People" "Countries" $ "People"/."countryId" /== "Countries"/."countryId"
 
 -- | > SELECT * FROM "People" LEFT JOIN "Countries" USING ("countryId")
-fromLeftJoinUsing :: Select [[Undefined]] a
-fromLeftJoinUsing =
-        select (//*)
-    /++ from (leftJoin "People" "Countries" "countryId")
+fromLeftJoinUsing :: Query [[Undefined]] a
+fromLeftJoinUsing = do
+    select (//*)
+    from $ leftJoin "People" "Countries" "countryId"
 
 {-|
 > SELECT * FROM "People" RIGHT JOIN "Countries"
 > ON "People"."countryId" = "Countries"."countryId"
 -}
-fromRightJoinOn :: Select [[Undefined]] a
-fromRightJoinOn =
-        select (//*)
-    /++ from (rightJoin "People" "Countries"
-            $ "People"/."countryId" /== "Countries"/."countryId")
+fromRightJoinOn :: Query [[Undefined]] a
+fromRightJoinOn = do
+    select (//*)
+    from $ rightJoin "People" "Countries" $ "People"/."countryId" /== "Countries"/."countryId"
 
 {-|
 > SELECT * FROM "People" FULL JOIN "Countries"
 > ON "People"."countryId" = "Countries"."countryId"
 -}
-fromFullJoinOn :: Select [[Undefined]] a
-fromFullJoinOn =
-    select (//*) /++ from (fullJoin t1 t2 $ c1 /== c2)
+fromFullJoinOn :: Query [[Undefined]] a
+fromFullJoinOn = do
+    select (//*)
+    from $ fullJoin t1 t2 $ c1 /== c2
     where
         t1 = table "People"
         t2 = table "Countries"
@@ -186,10 +192,10 @@ fromFullJoinOn =
 > ON ("People"."countryId" = "Countries"."countryId"
 >      AND "Countries"."name" = 'Italy')
 -}
-fromLeftJoinOnAnd :: Select [[Undefined]] a
-fromLeftJoinOnAnd =
-        select (//*)
-    /++ from (leftJoin t1 t2 cond)
+fromLeftJoinOnAnd :: Query [[Undefined]] a
+fromLeftJoinOnAnd = do
+    select (//*)
+    from $ leftJoin t1 t2 cond
     where
         t1 = table "People"
         t2 = table "Countries"
@@ -202,9 +208,10 @@ fromLeftJoinOnAnd =
 > FROM "People" AS "Father"
 >   INNER JOIN "People" AS "Child" ON "Father"."personId" = "Child"."father"
 -}
-selfJoin :: Select [[Undefined]] a
-selfJoin =
-    select (//*) /++ from (innerJoin father child cond)
+selfJoin :: Query [[Undefined]] a
+selfJoin = do
+    select (//*)
+    from $ innerJoin father child cond
     where
         cond = (father/."personId") /== (child/."father")
         father = people `alias` "Father"
@@ -212,24 +219,29 @@ selfJoin =
         people = table "People"
 
 -- | > SELECT * FROM "People" AS "P" CROSS JOIN "Countries" AS "C"
-crossJoinAlias :: Select [[Undefined]] a
-crossJoinAlias =
+crossJoinAlias :: Query [[Undefined]] a
+crossJoinAlias = do
         select (//*)
-    /++ from (crossJoin ("People" `alias` "P") ("Countries" `alias` "C"))
+        from $ crossJoin ("People" `alias` "P") ("Countries" `alias` "C")
 
 -- | > SELECT * FROM ("People" AS "P" CROSS JOIN "Countries") AS "PC";
-crossRefAlias :: Select [[Undefined]] a
-crossRefAlias =
+crossRefAlias :: Query [[Undefined]] a
+crossRefAlias = do
         select (//*)
-    /++ from ((("People" `alias` "P") `crossJoin` "Countries") `alias` "PC")
+        from $ (("People" `alias` "P") `crossJoin` "Countries") `alias` "PC"
 
 -- Sub-queries
 --------------------
 
+-- TODO: remove the get Select if possible.
+
 -- | > SELECT * FROM (SELECT * FROM "People") AS "P";
-selectSubQuery :: Select [[Undefined]] a
-selectSubQuery =
-    select (//*) /++ from (subQuery (select (//*) /++ from "People") "P")
+selectSubQuery :: Query [[Undefined]] a
+selectSubQuery = do
+    select (//*)
+    from $ subQuery (do
+        select (//*)
+        from "People") "P"
 
 --------------------
 -- WHERE
@@ -240,16 +252,18 @@ SELECT using a generic columns and values.
 
 > SELECT "firstName" FROM "People" WHERE "age" > 18
 -}
-selectGen :: Select [Undefined] a
-selectGen =
-    select "firstName" /++ from "People" /++ where_ ("age" /> genVal (18::Int))
+selectGen :: Query [Undefined] a
+selectGen = do
+    select "firstName"
+    from "People"
+    where_ $ "age" /> genVal (18::Int)
 
 -- | > SELECT * FROM "People" AS "P" WHERE "P"."age" > 18;
-whereAlias :: Select [[Undefined]] a
-whereAlias =
-        select (//*)
-    /++ from p
-    /++ where_ (p/. col "age" integer /> intVal 5)
+whereAlias :: Query [[Undefined]] a
+whereAlias = do
+    select (//*)
+    from p
+    where_ $ p/. col "age" integer /> intVal 5
     where
         p = table "People" `alias` "P"
 
@@ -259,11 +273,11 @@ whereAlias =
 >   LEFT JOIN "Countries" ON "People"."countryId" = "Countries"."countryId"
 > WHERE "Countries"."name" = 'Italy'
 -}
-leftJoinWhere :: Select [[Undefined]] a
-leftJoinWhere =
-        select (//*)
-    /++ from (leftJoin people countries joinC)
-    /++ where_ (countries/. col "name" (varchar 256) /== value "Italy")
+leftJoinWhere :: Query [[Undefined]] a
+leftJoinWhere = do
+    select (//*)
+    from $ leftJoin people countries joinC
+    where_ $ countries/. col "name" (varchar 256) /== value "Italy"
     where
         joinC = people/.countryId /== countries/.countryId
         countries = table "Countries"
@@ -277,23 +291,22 @@ FROM "People", "Countries"
 WHERE ("People"."countryId" = "Country"."countryId" AND "People"."age" > 18)
 @
 -}
-whereAnd :: Select [[Undefined]] a
-whereAnd =
-        select (//*)
-    /++ from [people, countries]
-    /++ where_ ((people/.id' /== countries/.id')
-        `and_` (people/. col "age" integer /> intVal 18))
+whereAnd :: Query [[Undefined]] a
+whereAnd = do
+    select (//*)
+    from [people, countries]
+    where_ $ (people/.id' /== countries/.id') `and_` (people/. col "age" integer /> intVal 18)
     where
         people = tableRef "People"
         countries = tableRef "Countries"
         id' = colRef "countryId"
 
 -- | > SELECT * FROM "Countries" WHERE "name" IN ('Italy', 'Switzerland')
-whereInValues :: Select [[Undefined]] a
-whereInValues =
-        select (//*)
-    /++ from "Countries"
-    /++ where_ (col "name" (varchar 256) `in_` cs)
+whereInValues :: Query [[Undefined]] a
+whereInValues = do
+    select (//*)
+    from "Countries"
+    where_ $ col "name" (varchar 256) `in_` cs
     where
         cs = colRef $ map genQVal ["Italy", "Switzerland"]
 
@@ -303,18 +316,17 @@ SELECT * FROM "People" WHERE "countryId" IN
     (SELECT "countryId" FROM "Countries" WHERE "inhabitants" >= "size" * 100))
 @
 -}
-whereInSelect :: Select [[Undefined]] a
-whereInSelect =
-        select (//*)
-    /++ from "People"
-    /++ where_ (countryId `in_` query)
+whereInSelect :: Query [[Undefined]] a
+whereInSelect = do
+    select (//*)
+    from "People"
+    where_ $ countryId `in_` query
     where
         countryId = col "countryId" integer
-        query =
-                select countryId
-            /++ from "Countries"
-            /++ where_ (col "inhabitants" integer
-                        />= (col "size" integer /* intVal 100))
+        query = do
+            select countryId
+            from "Countries"
+            where_ $ col "inhabitants" integer />= (col "size" integer /* intVal 100)
 
 {-|
 @
@@ -323,14 +335,11 @@ FROM "Countries"
 WHERE ("inhabitants" BETWEEN 10000 AND 10000000)
 @
 -}
-whereBetween :: Select [[Undefined]] a
-whereBetween =
-        select (//*)
-    /++ from "Countries"
-    /++ where_ (between
-        (col "inhabitants" integer)
-        (intVal 10000)
-        (intVal 1000000))
+whereBetween :: Query [[Undefined]] a
+whereBetween = do
+    select (//*)
+    from "Countries"
+    where_ $ between (col "inhabitants" integer) (intVal 10000) (intVal 1000000)
 
 {-|
 @
@@ -342,16 +351,16 @@ WHERE EXISTS (
     WHERE "People"."countryId" = "Countries"."countryId")
 @
 -}
-whereExists :: Select [[Undefined]] a
-whereExists =
-        select (//*)
-    /++ from "People"
-    /++ where_ (exists query)
+whereExists :: Query [[Undefined]] a
+whereExists = do
+    select (//*)
+    from "People"
+    where_ $ exists query
     where
-        query =
-                select (//*)
-            /++ from "Countries"
-            /++ where_ ("People"/."countryId" /== "Countries"/."countryId")
+        query = do
+            select (//*)
+            from "Countries"
+            where_ ("People"/."countryId" /== "Countries"/."countryId")
 
 --------------------
 -- ORDER BY
@@ -360,11 +369,11 @@ whereExists =
 {-|
 > SELECT "firstName", "lastName" FROM "People" ORDER BY "firstName, "lastName"
 -}                        
-orderByQuery :: Select [[String]] a
-orderByQuery =
-        select cs
-    /++ from "People"
-    /++ orderBy cs
+orderByQuery :: Query [[String]] a
+orderByQuery = do
+    select cs
+    from "People"
+    orderBy cs
     where
         cs =
             [ col "firstName" (varchar 256)
@@ -376,11 +385,11 @@ orderByQuery =
 > FROM "Countries"
 > ORDER BY "sum"
 -}
-orderBySum :: Select [[Undefined]] a
-orderBySum =
-        select [sum', colRefWrap "name"]
-    /++ from "Countries"
-    /++ orderBy sum'
+orderBySum :: Query [[Undefined]] a
+orderBySum = do
+    select [sum', colRefWrap "name"]
+    from "Countries"
+    orderBy sum'
     where
         sum' =
             wrap $ (col "size" integer /+ col "inhabitants" integer) `as_` "sum"
@@ -390,11 +399,11 @@ orderBySum =
 > FROM "People"
 > ORDER BY "firstName" ASC, "lastName" DESC
 -}
-orderByAscDesc :: Select [[String]] a
-orderByAscDesc =
-        select [firstName, lastName]
-    /++ from "People"
-    /++ orderBy [asc firstName, desc lastName]
+orderByAscDesc :: Query [[String]] a
+orderByAscDesc = do
+    select [firstName, lastName]
+    from "People"
+    orderBy [asc firstName, desc lastName]
     where
         firstName = col "firstName" (varchar 256)
         lastName = col "lastName" (varchar 256)
@@ -404,57 +413,59 @@ orderByAscDesc =
 > FROM "People"
 > ORDER BY "age" NULLS FIRST, "passeportNumber" NULLS LAST"
 -}
-orderByNull :: Select [[Int]] a
-orderByNull =
-        select [age, passeport]
-    /++ from "People"
-    /++ orderBy [nullsFirst age, nullsLast passeport]
+orderByNull :: Query [[Int]] a
+orderByNull = do
+    select [age, passeport]
+    from "People"
+    orderBy [nullsFirst age, nullsLast passeport]
     where
         age = col "age" integer
         passeport = col "passeportNumber" integer
 
 -- | > SELECT * FROM "People" ORDER BY "firstName" LIMIT 2
-orderByLimit :: Select [[Undefined]] a
-orderByLimit =
-        select (//*)
-    /++ from "People"
-    /++ (orderBy "firstName" /++ limit 2)
+orderByLimit :: Query [[Undefined]] a
+orderByLimit = do
+    select (//*)
+    from "People"
+    orderBy "firstName"
+    limit 2
 
 -- | > SELECT * FROM "People" ORDER BY "firstName" OFFSET 2
-orderByOffset :: Select [[Undefined]] a
-orderByOffset =
-        select (//*)
-    /++ from "People"
-    /++ (orderBy "firstName" /++ offset 2)
+orderByOffset :: Query [[Undefined]] a
+orderByOffset = do
+    select (//*)
+    from "People"
+    orderBy "firstName"
+    offset 2
 
 --------------------
 -- GROUP BY
 --------------------
 
 -- | > SELECT "age" FROM "People" GROUP BY "age"
-selectGroupBy :: Select [Int] a
-selectGroupBy =
-        select age
-    /++ from "People"
-    /++ groupBy age
+selectGroupBy :: Query [Int] a
+selectGroupBy = do
+    select age
+    from "People"
+    groupBy age
     where
         age = col "age" integer
 
 -- | > SELECT "lastName", sum("age") FROM "People" GROUP BY "lastName";
-groupBySum :: Select [[Undefined]] a
-groupBySum =
-        select [lastName, colRefWrap $ sum_ $ col "age" integer]
-    /++ from "People"
-    /++ groupBy lastName
+groupBySum :: Query [[Undefined]] a
+groupBySum = do
+    select [lastName, colRefWrap $ sum_ $ col "age" integer]
+    from "People"
+    groupBy lastName
     where
         lastName = colRefWrap $ col "lastName" (varchar 256)
 
 -- | > SELECT "lastName" AS "name" FROM "People" GROUP BY "name"
-groupByAlias :: Select [String] a
-groupByAlias =
-        select name
-    /++ from "People"
-    /++ groupBy name
+groupByAlias :: Query [String] a
+groupByAlias = do
+    select name
+    from "People"
+    groupBy name
     where
         name = col "lastName" (varchar 256) `as_` "name"
 
@@ -468,11 +479,11 @@ FROM "People" AS "P" LEFT JOIN "Countries" AS "C" USING ("personId")
 GROUP BY "personId", "name"
 @
 -}
-groupByComplex :: Select [[Undefined]] a
-groupByComplex =
-         select [colRefWrap personId, name, weird]
-     /++ from (leftJoin people countries personId)
-     /++ groupBy [colRefWrap personId, name]
+groupByComplex :: Query [[Undefined]] a
+groupByComplex = do
+     select [colRefWrap personId, name, weird]
+     from (leftJoin people countries personId)
+     groupBy [colRefWrap personId, name]
      where
          name = colRefWrap $ (people/."lastName") `as_` "name"
          personId = toCol "personId"
@@ -486,11 +497,12 @@ groupByComplex =
 > SELECT "lastName", SUM("age")
 > FROM "People" GROUP BY "lastName" HAVING SUM("age") > 18
 -}
-groupBySumHaving :: Select [[Undefined]] a
-groupBySumHaving =
-        select [lastName, colRefWrap sumAge]
-    /++ from "People"
-    /++ (groupBy lastName /++ having (sumAge /> intVal 18))
+groupBySumHaving :: Query [[Undefined]] a
+groupBySumHaving = do
+    select [lastName, colRefWrap sumAge]
+    from "People"
+    groupBy lastName
+    having $ sumAge /> intVal 18
     where
          lastName = colRefWrap "lastName"
          sumAge = sum_ $ col "age" integer
@@ -504,14 +516,13 @@ GROUP BY "personId", "P"."name", "P"."age"
 HAVING SUM("P"."age" * "C"."size") > 5000000
 @
 -}
-havingComplex :: Select [[Undefined]] a       
-havingComplex =
-         select [colRefWrap personId, colRefWrap name, wrap weird]
-     /++ from (leftJoin people countries personId)
-     /++ where_ (personId /> intVal 2)
-     /++ ( groupBy [colRefWrap personId, wrap name, wrap age]
-     /++   having (sum_ (age /* size) /> intVal 5000000)
-         )
+havingComplex :: Query [[Undefined]] a       
+havingComplex = do
+     select [colRefWrap personId, colRefWrap name, wrap weird]
+     from $ leftJoin people countries personId
+     where_ $ personId /> intVal 2
+     groupBy [colRefWrap personId, wrap name, wrap age]
+     having $ sum_ (age /* size) /> intVal 5000000
      where
          name      = people/."name"
          personId  = col "personId" integer
@@ -525,125 +536,144 @@ havingComplex =
 -- Comparison operators
 --------------------
 
--- | Select all rows from the People table.
-selectPeople :: Select [[Undefined]] a
-selectPeople = select (//*) /++ from "People"
+-- | Query all rows from the People table.
+selectPeople :: Query [[Undefined]] a
+selectPeople = do
+    select (//*)
+    from "People"
 
 -- | > SELECT * FROM "People" WHERE "age" > 18
-selectGreaterThan :: Select [[Undefined]] a
-selectGreaterThan =
-        selectPeople
-    /++ where_ (col "age" integer /> intVal 18)
+selectGreaterThan :: Query [[Undefined]] a
+selectGreaterThan = do
+    selectPeople
+    where_ $ col "age" integer /> intVal 18
 
 -- | > SELECT * FROM "People" WHERE "age" >= 18
-selectGreaterThanOrEqualTo :: Select [[Undefined]] a
-selectGreaterThanOrEqualTo =
-        selectPeople
-    /++ where_ (col "age" integer />= intVal 18)
+selectGreaterThanOrEqualTo :: Query [[Undefined]] a
+selectGreaterThanOrEqualTo = do
+    selectPeople
+    where_ $ col "age" integer />= intVal 18
     
 -- | > SELECT * FROM "People" WHERE "age" < 18
-selectSmallerThan :: Select [[Undefined]] a
-selectSmallerThan =
-        selectPeople
-    /++ where_ (col "age" integer /< intVal 18)
+selectSmallerThan :: Query [[Undefined]] a
+selectSmallerThan = do
+    selectPeople
+    where_ $ col "age" integer /< intVal 18
     
 -- | > SELECT * FROM "People" WHERE "age" <= 18
-selectSmallerThanOrEqualTo :: Select [[Undefined]] a
-selectSmallerThanOrEqualTo =
-        selectPeople
-    /++ where_ (col "age" integer /<= intVal 18)
+selectSmallerThanOrEqualTo :: Query [[Undefined]] a
+selectSmallerThanOrEqualTo = do
+    selectPeople
+    where_ $ col "age" integer /<= intVal 18
     
 -- | > SELECT * FROM "People" WHERE "age" = 18
-selectEqual :: Select [[Undefined]] a
-selectEqual = selectPeople /++ where_ (col "age" integer /== intVal 18)
+selectEqual :: Query [[Undefined]] a
+selectEqual = do
+    selectPeople
+    where_ $ col "age" integer /== intVal 18
     
 -- | > SELECT * FROM "People" WHERE "age" <> 18
-selectNotEqual :: Select [[Undefined]] a
-selectNotEqual = selectPeople /++ where_ (col "age" integer /<> intVal 18)
+selectNotEqual :: Query [[Undefined]] a
+selectNotEqual = do
+    selectPeople
+    where_ $ col "age" integer /<> intVal 18
     
 -- | > SELECT * FROM "People" WHERE ("age" NOT BETWEEN 5 AND 18)
-selectNotBetween :: Select [[Undefined]] a
-selectNotBetween =
-        selectPeople
-    /++ where_
-            (notBetween (col "age" integer) (intVal 5) (intVal 18))
+selectNotBetween :: Query [[Undefined]] a
+selectNotBetween = do
+    selectPeople
+    where_ $ notBetween (col "age" integer) (intVal 5) $ intVal 18
 
 --------------------
 -- Boolean operators
 --------------------
 
 -- | > SELECT * FROM "People" WHERE "passeportNumber" IS NULL
-isNullQuery :: Select [[Undefined]] a
-isNullQuery = selectPeople /++ where_ (isNull "passeportNumber")
+isNullQuery :: Query [[Undefined]] a
+isNullQuery = do
+    selectPeople
+    where_ $ isNull "passeportNumber"
     
 -- | > SELECT * FROM "People" WHERE "passeportNumber" IS NOT NULL
-isNotNullQuery :: Select [[Undefined]] a
-isNotNullQuery = selectPeople /++ where_ (isNotNull "passeportNumber")
+isNotNullQuery :: Query [[Undefined]] a
+isNotNullQuery = do
+    selectPeople
+    where_ $ isNotNull "passeportNumber"
     
 {-|
 > SELECT *
 > FROM "People" WHERE "nickNameAsKind" IS DISTINCT FROM "nickNameAsAdult"
 -}
-isDistinctFromQuery :: Select [[Undefined]] a
-isDistinctFromQuery =
-        selectPeople
-    /++ where_ ("nickNameAsKind" `isDistinctFrom` "nickNameAsAdult")
+isDistinctFromQuery :: Query [[Undefined]] a
+isDistinctFromQuery = do
+    selectPeople
+    where_ $ "nickNameAsKind" `isDistinctFrom` "nickNameAsAdult"
 
 {-|
 > SELECT *
 > FROM "People" WHERE "nickNameAsKind" IS NOT DISTINCT FROM "nickNameAsAdult"
 -}
-isNotDistinctFromQuery :: Select [[Undefined]] a
-isNotDistinctFromQuery =
-        selectPeople
-    /++ where_ ("nickNameAsKind" `isNotDistinctFrom` "nickNameAsAdult")
+isNotDistinctFromQuery :: Query [[Undefined]] a
+isNotDistinctFromQuery = do
+    selectPeople
+    where_ $ "nickNameAsKind" `isNotDistinctFrom` "nickNameAsAdult"
 
 -- | > SELECT * FROM "People" WHERE "married" IS TRUE
-isTrueQuery :: Select [[Undefined]] a
-isTrueQuery = selectPeople /++ where_ (isTrue $ col "married" boolean)
+isTrueQuery :: Query [[Undefined]] a
+isTrueQuery = do
+    selectPeople
+    where_ $ isTrue $ col "married" boolean
     
 -- | > SELECT * FROM "People" WHERE "married" IS NOT TRUE
-isNotTrueQuery :: Select [[Undefined]] a
-isNotTrueQuery = selectPeople /++ where_ (isNotTrue $ col "married" boolean)
+isNotTrueQuery :: Query [[Undefined]] a
+isNotTrueQuery = do
+    selectPeople
+    where_ $ isNotTrue $ col "married" boolean
     
 -- | > SELECT * FROM "People" WHERE "married" IS FALSE
-isFalseQuery :: Select [[Undefined]] a
-isFalseQuery = selectPeople /++ where_ (isFalse $ col "married" boolean)
+isFalseQuery :: Query [[Undefined]] a
+isFalseQuery = do
+    selectPeople
+    where_ $ isFalse $ col "married" boolean
     
 -- | > SELECT * FROM "People" WHERE "married" IS NOT FALSE
-isNotFalseQuery :: Select [[Undefined]] a
-isNotFalseQuery = selectPeople /++ where_ (isNotFalse $ col "married" boolean)
+isNotFalseQuery :: Query [[Undefined]] a
+isNotFalseQuery = do
+    selectPeople
+    where_ $ isNotFalse $ col "married" boolean
     
 {-|
 > SELECT * FROM "People"
 > WHERE ("nickNameAsKind" = "nickNameAsAdult") IS UNKWNOWN
 -}
-isUnknownQuery :: Select [[Undefined]] a
-isUnknownQuery =
-    selectPeople /++ where_ (isUnknown $ "nickNameAsKind" /== "nickNameAsAdult")
+isUnknownQuery :: Query [[Undefined]] a
+isUnknownQuery = do
+    selectPeople
+    where_ $ isUnknown $ "nickNameAsKind" /== "nickNameAsAdult"
     
 {-|
 > SELECT *
 > FROM "People" WHERE ("nickNameAsKind" = "nickNameAsAdult") IS NOT UNKWNOWN
 -}
-isNotUnknownQuery :: Select [[Undefined]] a
-isNotUnknownQuery =
-        selectPeople
-    /++ where_ (isNotUnknown $ "nickNameAsKind" /== "nickNameAsAdult")
+isNotUnknownQuery :: Query [[Undefined]] a
+isNotUnknownQuery = do
+    selectPeople
+    where_ $ isNotUnknown $ "nickNameAsKind" /== "nickNameAsAdult"
 
 --------------------
 -- Functions
 --------------------
 
 -- | > SELECT "age" + 1 FROM "People"
-addition :: Select [Int] a
-addition =
-        select (col "age" integer /+ intVal 1)
-    /++ from "People"
+addition :: Query [Int] a
+addition = do
+    select $ col "age" integer /+ intVal 1
+    from "People"
     
 -- | > SELECT 3 * 4
-multiplication :: Select [Int] a
-multiplication = select $ intVal 3 /* intVal 4
+multiplication :: Query [Int] a
+multiplication = do
+    select $ intVal 3 /* intVal 4
 
 {-|
 MariaDB & PostgreSQL
@@ -652,8 +682,9 @@ MariaDB & PostgreSQL
 SqLite
 > SELECT Date('now')
 -}
-selectCurrentDate :: Select [Time] a
-selectCurrentDate = select currentDate
+selectCurrentDate :: Query [Time] a
+selectCurrentDate = do
+    select currentDate
 
 {-|
 MariaDB
@@ -662,19 +693,20 @@ MariaDB
 PostgreSQL & SqLite
 > SELECT random()
 -}
-selectRandom :: Select [Int] a
-selectRandom = select random
+selectRandom :: Query [Int] a
+selectRandom = do
+    select random
 
 --------------------
 -- Combined queries
 --------------------
 
--- | Select a person by its primary key.
-selectId :: Int -> Select [[Undefined]] a
-selectId id' =
-        select (//*)
-    /++ from "People"
-    /++ where_ (col "personId" integer /== value id') 
+-- | Query a person by its primary key.
+selectId :: Int -> Query [[Undefined]] a
+selectId id' = do
+    select (//*)
+    from "People"
+    where_ $ col "personId" integer /== value id'
 
 {-|
 > SELECT * FROM "People" WHERE "personId" = 1
@@ -694,10 +726,10 @@ unionQuery = union (selectId 1) $ selectId 2
 unionCombined :: Select [[Undefined]] a
 unionCombined =
     intersect
-        unionQuery
-        (select (//*)
-            /++ from "People"
-            /++ where_ (col "personId" integer /== intVal 1))          
+        unionQuery (do
+            select (//*)
+            from "People"
+            where_ (col "personId" integer /== intVal 1))     
 
 {-|
 > SELECT * FROM "People" WHERE "personId" = 1
@@ -721,7 +753,9 @@ intersectAllQuery = intersectAll (selectId 1) $ selectId 2
 > SELECT * FROM "People" WHERE "personId" = 1
 -}
 exceptQuery :: Select [[Undefined]] a
-exceptQuery = except (select (//*) /++ from "People") $ selectId 1
+exceptQuery = except (do
+    select (//*)
+    from "People") (selectId 1)
 
 {-|
 > SELECT * FROM "People"
@@ -730,18 +764,20 @@ exceptQuery = except (select (//*) /++ from "People") $ selectId 1
 -}
 exceptAllQuery :: Select [[Undefined]] a
 exceptAllQuery =
-    exceptAll (select (//*) /++ from "People") $ selectId 1
+    exceptAll (do
+        select (//*)
+        from "People") (selectId 1)
 
 ----------------------------------------
 -- PostgreSQL
 ----------------------------------------
 
 -- | > SELECT DISTINCT ON ("firstName") * FROM "People" ORDER BY "age"
-distinctOnSelect :: Select [[Undefined]] Pg.PostgreSQL
-distinctOnSelect =
-        P.selectDistinctOn [colRefWrap "firstName"] (//*)
-    /++ from "People"
-    /++ orderBy "age"
+distinctOnSelect :: Query [[Undefined]] Pg.PostgreSQL
+distinctOnSelect = do
+    P.selectDistinctOn [colRefWrap "firstName"] (//*)
+    from "People"
+    orderBy "age"
     
 {-|
 SELECT * FROM "Countries", LATERAL (
@@ -749,13 +785,69 @@ SELECT * FROM "Countries", LATERAL (
     FROM "People"
     WHERE "People"."countryId" = "Countries"."countryId") AS "C"
 -}
-fromLateral :: Select [[Undefined]] Pg.PostgreSQL
-fromLateral =
-        select (//*)
-    /++ from [tableRef "Countries", P.lateral (wrap subSelect) "C"]
+fromLateral :: Query [[Undefined]] Pg.PostgreSQL
+fromLateral = do
+    select (//*)
+    from [tableRef "Countries", P.lateral (wrap subQuery) "C"]
     where
-        subSelect =
+        subQuery = do
+            select (//*)
+            from "People"
+            where_ $ "People"/."countryId" /== "Countries"/."countryId"
+
+----------------------------------------
+-- Quick start tutorial
+----------------------------------------
+            
+myQueryOne :: Query [[Undefined]] a
+myQueryOne = do
+    select (//*)
+    from $ table "films"
+
+myQueryTwo :: Query [[Int]] SqLite
+myQueryTwo = do
+    select [id', age]
+    from films
+    where_ $ age /+ intVal 20 `in_` subSelect
+    where
+        id' = col "id" integer
+        age = col "age" integer 
+        films = table "films"
+        actor = table "actors"
+        subSelect = do
+            select age
+            from actor
+        
+--myQueryTwo' :: Query [[Undefined]] SqLite
+--myQueryTwo' =
+--        select [wrap id', wrap age]
+--    /++ from films
+--    /++ where_ (age /+ 20 `in_` select age /++ from actor)
+--    where
+--        id' = col "id" integer
+--        age = col "age" $ varchar 256
+--        films = table "films"
+--        actor = table "actors"
+        
+myQueryThree :: Query [[Undefined]] Pg.PostgreSQL
+myQueryThree = do
+        select (//*)
+        from [tableRef $ table "foo", Pg.lateral (wrap sub) "s"]
+        where
+            sub = do
                 select (//*)
-            /++ from "People"
-            /++ where_ ("People"/."countryId" /== "Countries"/."countryId")
+                from "bar"
+            
+myQueryFour :: Query [[Undefined]] a
+myQueryFour = do
+    select ["firstName", "lastName"]
+    from "People"
+    where_ $ "age" /> genVal (18::Int)
     
+myQueryFive :: Query [[Undefined]] a
+myQueryFive = do
+    select [wrap name, wrap age]
+    from $ table "People"
+    where
+        name = col "name" $ varchar 256
+        age = col "age" integer

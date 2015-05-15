@@ -20,7 +20,7 @@ description:
                 .
                 On the other hand, we didn't wanted to copy-paste the examples queries between the string and DB tests.
 license:        GPL-3
-license-file:   LICENSE
+license-file:   LICENSE.md
 copyright:      (c) 2015 Leonard Monnier
 tested-with:    GHC==7.8.2
 

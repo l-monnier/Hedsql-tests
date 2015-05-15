@@ -26,21 +26,23 @@ import Database.Hedsql.SqLite
 --------------------------------------------------------------------------------
 
 -- | > DELETE FROM "People" WHERE "age" <> 20
-deleteNotEqualTo :: Delete a
-deleteNotEqualTo =
-    deleteFrom "People" /++ where_ (col "age" integer /<> value (20::Int))
+deleteNotEqualTo :: DeleteStmt a
+deleteNotEqualTo = do
+    deleteFrom "People"
+    where_ (col "age" integer /<> value (20::Int))
 
 {-|
 > DELETE FROM "People"
 >   WHERE "personId" IN
 >        (SELECT "personId" FROM "Countries" WHERE "name" = 'Switzerland')
 -}
-deleteSubQuery :: Delete a
-deleteSubQuery =
-        deleteFrom "People"
-    /++ where_ ("personId" `in_`
-            (   select "personId"
-            /++ from "Countries"
-            /++ where_ (col "name" (varchar 128) /== value "Switzerland")
+deleteSubQuery :: DeleteStmt a
+deleteSubQuery = do
+    deleteFrom "People"
+    where_ ("personId" `in_`
+            (execStmt $ do
+                select "personId"
+                from "Countries"
+                where_ (col "name" (varchar 128) /== value "Switzerland")
             )
         )
