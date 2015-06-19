@@ -24,4 +24,5 @@ main = defaultMain
     , Database.Hedsql.Tests.Queries.tests
     , Database.Hedsql.Tests.TableManipulations.tests
     , Database.Hedsql.Tests.Update.tests
+    , Database.Hedsql.Tests.PrettyPrint.tests
     ]

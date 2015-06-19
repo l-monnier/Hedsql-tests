@@ -37,6 +37,7 @@ module Database.Hedsql.Examples.Select
     , selectSubQuery
     
       -- ** WHERE
+    , selectGen
     , whereAlias
     , leftJoinWhere
     , whereAnd
