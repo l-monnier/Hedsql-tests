@@ -14,28 +14,28 @@ module Database.Hedsql.Examples.Create
     -- * Full examples
       countries
     , people
-    
+
     -- * Basics
     , simpleTable
     , defaultVal
-    
+
     -- * Constraints
-    
+
     -- ** PRIMARY KEY
     , primaryKeyCol
     , primaryKeyColAuto
     , primaryKeyTable
-    
+
     -- ** UNIQUE
     , createUnique
     , createUniqueT
-    
+
     -- ** NOT NULL
     , noNulls
-    
+
     -- ** FOREIGN KEY
     , createFK
-    
+
     -- ** CHECK
     , createCheck
     , createChecks
@@ -60,17 +60,17 @@ import Database.Hedsql.SqLite
 MariaDB and SqLite:
 @
 CREATE TABLE "Countries" (
-    "countryId"   INTEGER      PRIMARY KEY AUTOINCREMENT,
-    "name"        VARCHAR(256) NOT NULL, UNIQUE,
-    "size"        INTEGER,
-    "inhabitants" INTEGER
+  "countryId"   INTEGER PRIMARY KEY AUTOINCREMENT,
+  "name"        VARCHAR(256) NOT NULL, UNIQUE,
+  "size"        INTEGER,
+  "inhabitants" INTEGER
 )
 @
 
 PostgreSQL:
 @
 CREATE TABLE "Countries" (
-    "countryId"   serial       PRIMARY KEY,
+    "countryId"   serial PRIMARY KEY,
     "name"        varchar(256) NOT NUL, UNIQUE,
     "size"        integer,
     "inhabitants" integer
@@ -91,30 +91,30 @@ countries =
 MariaDB and SqLite:
 @
 CREATE TABLE "People" (
-   "personId"   INTEGER      PRIMARY KEY AUTOINCREMENT,
-   "title"      CHAR(2)      DEFAULT('Ms')
+   "personId"   INTEGER PRIMARY KEY AUTOINCREMENT,
+   "title"      CHAR(2) DEFAULT('Ms')
    "firstName"  VARCHAR(256) NOT NULL,
    "lastName"   VARCHAR(256) NOT NULL,
-   "age"        INTEGER      CHECK ("age" > -1),
-   "married"    BOOLEAN      DEFAULT(FALSE), NOT NULL
-   "father"     INTEGER      REFERENCES "People"("personId")
+   "age"        INTEGER CHECK ("age" > -1),
+   "married"    BOOLEAN DEFAULT(FALSE), NOT NULL
+   "father"     INTEGER REFERENCES "People"("personId")
    "passportNo" VARCHAR(256) UNIQUE,
-   "countryId"  INTEGER      REFERENCES "Countries"("countryId")
+   "countryId"  INTEGER REFERENCES "Countries"("countryId")
 )
 @
 
 PostgreSQL:
 @
 CREATE TABLE "People" (
-   "personId"   serial       PRIMARY KEY,
-   "title"      char(2)      DEFAULT('Ms')
+   "personId"   serial  PRIMARY KEY,
+   "title"      char(2) DEFAULT('Ms')
    "firstName"  varchar(256) NOT NULL,
    "lastName"   varchar(256) NOT NULL,
-   "age"        integer      CHECK ("age" > -1),
-   "married"    boolean      DEFAULT(FALSE), NOT NULL
+   "age"        integer CHECK ("age" > -1),
+   "married"    boolean DEFAULT(FALSE), NOT NULL
    "passportNo" varchar(256) UNIQUE,
-   "father"     integer      REFERENCES "People"("personId")
-   "countryId"  integer      REFERENCES "Countries"("countryId")
+   "father"     integer REFERENCES "People"("personId")
+   "countryId"  integer REFERENCES "Countries"("countryId")
 )
 @
 -}
@@ -140,10 +140,10 @@ people =
 -- Basics
 ----------------------------------------
 
--- | > CREATE TABLE "People" ("firstName" varchar(256))        
+-- | > CREATE TABLE "People" ("firstName" varchar(256))
 simpleTable :: CreateStmt a
 simpleTable = createTable "People" [wrap (col "firstName" $ varchar 256)]
-      
+
 -- | CREATE TABLE "People" ("country" integer DEFAULT(1))
 defaultVal :: CreateStmt a
 defaultVal = createTable
@@ -203,7 +203,7 @@ primaryKeyTable = do
 createUnique :: CreateStmt a
 createUnique =
     createTable "People" [wrap (col "passportNo" (varchar 256)) /++ unique]
-    
+
 {-|
 CREATE TABLE "People" (
     "firstName" varchar(256),
@@ -257,7 +257,7 @@ createFK =
 --------------------
 -- CHECK
 --------------------
-     
+
 -- | CREATE TABLE "People" ("age" integer CHECK ("age" > -1))
 createCheck :: CreateStmt a
 createCheck =
@@ -266,8 +266,8 @@ createCheck =
         [wrap age /++ check (age /> intVal (-1))]
     where
         age = col "age" integer
-        
-{-|            
+
+{-|
 CREATE TABLE "People" (
     "lastName" varchar(256),
     "age"      integer,

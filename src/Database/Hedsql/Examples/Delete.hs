@@ -10,7 +10,7 @@ Portability : portable
 A collection of DELETE statements to be used in tests or as examples.
 -}
 module Database.Hedsql.Examples.Delete
-    ( deleteNotEqualTo 
+    ( deleteNotEqualTo
     , deleteSubQuery
     ) where
 
@@ -25,16 +25,24 @@ import Database.Hedsql.SqLite
 -- PUBLIC
 --------------------------------------------------------------------------------
 
--- | > DELETE FROM "People" WHERE "age" <> 20
+{-|
+@
+DELETE FROM "People"
+WHERE "age" <> 20
+@
+-}
 deleteNotEqualTo :: DeleteStmt a
 deleteNotEqualTo = do
     deleteFrom "People"
     where_ (col "age" integer /<> value (20::Int))
 
 {-|
-> DELETE FROM "People"
->   WHERE "personId" IN
->        (SELECT "personId" FROM "Countries" WHERE "name" = 'Switzerland')
+@
+DELETE FROM "People"
+WHERE "personId" IN (SELECT "personId"
+                     FROM "Countries"
+                     WHERE "name" = 'Switzerland')
+@
 -}
 deleteSubQuery :: DeleteStmt a
 deleteSubQuery = do

@@ -14,7 +14,7 @@ module Database.Hedsql.Examples.Update
       -- * All vendors
       equalTo
     , updateSelect
-    
+
       -- * PostgreSQL
     , defaultVal
     )
@@ -36,14 +36,20 @@ import qualified Database.Hedsql.PostgreSQL                      as P
 ----------------------------------------
 -- All vendors
 ----------------------------------------
-        
--- | > UPDATE "People" SET "age" = 2050 WHERE "lastName" = 'Ceasar'
+
+{-|
+@
+UPDATE "People"
+SET "age" = 2050
+WHERE "lastName" = 'Ceasar'
+@
+-}
 equalTo :: UpdateStmt a
 equalTo = do
     update "People" [assign (col "age" integer) $ intVal 2050]
     where_ (col "lastName" (varchar 256) /== value "Ceasar")
 
-{-|    
+{-|
 UPDATE "People" SET "age" = "age" + 1 WHERE "countryId" IN
   (SELECT "countryId" FROM "Countries" WHERE "name" = 'Italy')
 -}
@@ -62,7 +68,7 @@ updateSelect = do
 ----------------------------------------
 -- PostgreSQL
 ----------------------------------------
-            
+
 -- | > UPDATE "People" SET "title" = DEFAULT WHERE "personId" = 1
 defaultVal :: UpdateStmt P.PostgreSQL
 defaultVal = do

@@ -6,17 +6,23 @@ module Database.Hedsql.Tests.PrettyPrint
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Database.Hedsql.Examples.Create
+import Database.Hedsql.Examples.Delete
+import Database.Hedsql.Examples.Insert as Insert
 import Database.Hedsql.Examples.Select
+import Database.Hedsql.Examples.Update
 
 import Test.Framework                 (Test, testGroup)
 import Test.Framework.Providers.HUnit (testCase)
-import Test.HUnit              hiding (Test)
+import Test.HUnit                     hiding (Test)
 
-import qualified Database.Hedsql.SqLite     as S
+import qualified Database.Hedsql.SqLite as S
 
 --------------------------------------------------------------------------------
 -- PRIVATE
 --------------------------------------------------------------------------------
+
+-- SELECT
 
 testSelectStruct :: Test
 testSelectStruct = testCase "Basic SELECT structure" assertSelect
@@ -24,8 +30,331 @@ testSelectStruct = testCase "Basic SELECT structure" assertSelect
         assertSelect :: Assertion
         assertSelect = assertEqual
             "SELECT structure is incorrect."
-            "SELECT \"firstName\" FROM \"People\" WHERE \"age\" > 18"
-            (S.parse selectGen)
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \WHERE \"age\" > 18\n\
+            \GROUP BY \"lastName\"\n\
+            \HAVING SUM(\"age\") > 100\n\
+            \ORDER BY \"id\"\n\
+            \LIMIT 30 OFFSET 2"
+            (S.parseP selectFull)
+
+testSelectOneCol :: Test
+testSelectOneCol = testCase "SELECT with one column" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "SELECT with one column is incorrect."
+            "SELECT *\n\
+            \FROM \"People\""
+            (S.parseP selectAll)
+
+testSelectTwoCols :: Test
+testSelectTwoCols = testCase "SELECT with two columns" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "SELECT with two columns is incorrect."
+            "SELECT\n\
+            \  \"firstName\",\n\
+            \  \"lastName\"\n\
+            \FROM \"People\""
+            (S.parseP selectTwoCols)
+
+testSelectCombinedOne :: Test
+testSelectCombinedOne =
+    testCase "Combined SELECT statement with one combination" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "Combined SELECT statement with one combination is incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \WHERE \"personId\" = 1\n\
+            \UNION\n\
+            \SELECT *\n\
+            \FROM \"People\"\n\
+            \WHERE \"personId\" = 2"
+            (S.parseP unionQuery)
+
+testJoin :: Test
+testJoin =
+    testCase "SELECT with a join clause" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "SELECT with a join clause is incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \INNER JOIN \"Countries\"\n\
+            \ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
+            (S.parseP fromInnerJoinOn)
+
+testNestedJoins :: Test
+testNestedJoins =
+    testCase "SELECT with a nested join clause" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "SELECT with a nested join clause is incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \INNER JOIN \"Countries\"\n\
+            \ON \"People\".\"countryId\" = \"Countries\".\"countryId\"\n\
+            \INNER JOIN \"Addresses\"\n\
+            \ON \"People\".\"personId\" = \"Addresses\".\"personId\""
+            (S.parseP nestedJoins)
+
+testSubQueryFrom :: Test
+testSubQueryFrom =
+    testCase "FROM with a sub-query." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "FROM with a sub-query is incorrect."
+            "SELECT *\n\
+            \FROM (SELECT *\n\
+            \      FROM \"People\") AS \"P\""
+            (S.parseP selectSubQuery)
+
+testSubQueryWhere :: Test
+testSubQueryWhere =
+    testCase "WHERE with a sub-query." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "WHERE with a sub-query is incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \WHERE \"countryId\" IN (SELECT \"countryId\"\n\
+            \                      FROM \"Countries\"\n\
+            \                      WHERE \"inhabitants\" >= \"size\" * 100)"
+            (S.parseP whereInSelect)
+
+testWhereAnd :: Test
+testWhereAnd =
+    testCase "WHERE with an AND clause." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "WHERE with an AND clause is incorrect."
+            "SELECT *\n\
+            \FROM\n\
+            \  \"People\",\n\
+            \  \"Countries\"\n\
+            \WHERE\n\
+            \  \"People\".\"countryId\" = \"Countries\".\"countryId\"\n\
+            \  AND \"People\".\"age\" > 18"
+            (S.parseP whereAnd)
+
+testWhereAnds :: Test
+testWhereAnds =
+    testCase "WHERE with two AND clauses." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "WHERE with two AND clauses is incorrect."
+            "SELECT *\n\
+            \FROM\n\
+            \  \"People\",\n\
+            \  \"Countries\"\n\
+            \WHERE\n\
+            \  \"People\".\"countryId\" = \"Countries\".\"countryId\"\n\
+            \  AND \"People\".\"age\" > 18\n\
+            \  AND \"People\".\"age\" < 70"
+            (S.parseP whereAnds)
+
+testGroupByOne :: Test
+testGroupByOne =
+    testCase "GROUP BY with one column" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "GROUP BY with one column is incorrect."
+            "SELECT \"age\"\n\
+            \FROM \"People\"\n\
+            \GROUP BY \"age\""
+            (S.parseP selectGroupBy)
+
+testGroupByTwo :: Test
+testGroupByTwo =
+    testCase "GROUP BY with two columns" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "GROUP BY with two columns is incorrect."
+            "SELECT\n\
+            \  \"firstName\",\n\
+            \  \"age\"\n\
+            \FROM \"People\"\n\
+            \GROUP BY\n\
+            \  \"firstName\",\n\
+            \  \"age\""
+            (S.parseP groupByTwo)
+
+testHavingOne :: Test
+testHavingOne =
+    testCase "Having with one condition" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "Having with one condition is incorrect."
+            "SELECT\n\
+            \  \"lastName\",\n\
+            \  SUM(\"age\")\n\
+            \FROM \"People\"\n\
+            \GROUP BY \"lastName\"\n\
+            \HAVING SUM(\"age\") > 18"
+            (S.parseP groupBySumHaving)
+
+testHavingTwo :: Test
+testHavingTwo =
+    testCase "Having with two conditions" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "Having with two conditions is incorrect."
+            "SELECT \"firstName\"\n\
+            \FROM \"People\"\n\
+            \GROUP BY \"firstName\"\n\
+            \HAVING\n\
+            \  SUM(\"age\") > 18\n\
+            \  OR SUM(\"size\") < 1800"
+            (S.parseP groupBySumHavingTwo)
+
+testOrderByOne :: Test
+testOrderByOne =
+    testCase "ORDER BY with one column" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "ORDER BY with one column is incorrect."
+            "SELECT \"firstName\"\n\
+            \FROM \"People\"\n\
+            \ORDER BY \"firstName\""
+            (S.parseP orderByQuery)
+
+testOrderByTwo :: Test
+testOrderByTwo =
+    testCase "ORDER BY with two columns" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "ORDER BY with two columns is incorrect."
+            "SELECT\n\
+            \  \"firstName\",\n\
+            \  \"lastName\"\n\
+            \FROM \"People\"\n\
+            \ORDER BY\n\
+            \  \"firstName\" ASC,\n\
+            \  \"lastName\" DESC"
+            (S.parseP orderByAscDesc)
+
+testLimit :: Test
+testLimit =
+    testCase "LIMIT clause." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "LIMIT clause is incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \ORDER BY \"firstName\"\n\
+            \LIMIT 2"
+            (S.parseP orderByLimit)
+
+testOffset :: Test
+testOffset =
+    testCase "OFFSET clause." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "OFFSET clause is incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \ORDER BY \"firstName\"\n\
+            \OFFSET 2"
+            (S.parseP orderByOffset)
+
+testLimitOffset :: Test
+testLimitOffset =
+    testCase "LIMIT and OFFSET clauses." assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "LIMIT and OFFSET clauses are incorrect."
+            "SELECT *\n\
+            \FROM \"People\"\n\
+            \ORDER BY \"firstName\"\n\
+            \LIMIT 5 OFFSET 2"
+            (S.parseP orderByLimitOffset)
+
+-- CREATE
+
+testCreate :: Test
+testCreate =
+    testCase "CREATE statement." assertCreate
+    where
+        assertCreate :: Assertion
+        assertCreate = assertEqual
+            "CREATE statement incorrect."
+            "CREATE TABLE \"Countries\" (\n\
+            \  \"countryId\"   INTEGER PRIMARY KEY AUTOINCREMENT,\n\
+            \  \"name\"        VARCHAR(256) NOT NULL, UNIQUE,\n\
+            \  \"size\"        INTEGER,\n\
+            \  \"inhabitants\" INTEGER\n\
+            \)"
+            (S.parseP countries)
+
+-- UPDATE
+
+testUpdate :: Test
+testUpdate =
+    testCase "UPDATE statement." assertUpdate
+    where
+        assertUpdate :: Assertion
+        assertUpdate = assertEqual
+            "UPDATE statement incorrect."
+            "UPDATE \"People\"\n\
+            \SET \"age\" = 2050\n\
+            \WHERE \"lastName\" = 'Ceasar'"
+            (S.parseP equalTo)
+
+-- DELETE
+
+testDelete :: Test
+testDelete =
+    testCase "DELETE statement." assertDelete
+    where
+        assertDelete :: Assertion
+        assertDelete = assertEqual
+            "DELETE statement incorrect."
+            "DELETE FROM \"People\"\n\
+            \WHERE \"age\" <> 20"
+            (S.parseP deleteNotEqualTo)
+
+-- INSERT
+
+testInsert :: Test
+testInsert =
+    testCase "INSERT statement." assertInsert
+    where
+        assertInsert :: Assertion
+        assertInsert = assertEqual
+            "Insert statement incorrect."
+            "INSERT INTO \"People\" (\n\
+            \  \"firstName\",\n\
+            \  \"lastName\",\n\
+            \  \"age\",\n\
+            \  \"passportNo\",\n\
+            \  \"countryId\")\n\
+            \VALUES (\n\
+            \  'Julius',\n\
+            \  'Ceasar',\n\
+            \  2000,\n\
+            \  NULL,\n\
+            \  2)"
+            (S.parseP Insert.defaultVal)
 
 --------------------------------------------------------------------------------
 -- PUBLIC
@@ -35,4 +364,26 @@ testSelectStruct = testCase "Basic SELECT structure" assertSelect
 tests :: Test
 tests = testGroup "Pretty Print"
     [ testSelectStruct
+    , testSelectOneCol
+    , testSelectTwoCols
+    , testSelectCombinedOne
+    , testJoin
+    , testNestedJoins
+    , testSubQueryFrom
+    , testSubQueryWhere
+    , testWhereAnd
+    , testWhereAnds
+    , testGroupByOne
+    , testGroupByTwo
+    , testHavingOne
+    , testHavingTwo
+    , testOrderByOne
+    , testOrderByTwo
+    , testLimit
+    , testOffset
+    , testLimitOffset
+    , testCreate
+    , testUpdate
+    , testDelete
+    , testInsert
     ]

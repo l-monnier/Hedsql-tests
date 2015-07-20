@@ -7,6 +7,7 @@ module Main where
 import Database.Hedsql.Tests.Delete
 import Database.Hedsql.Tests.Insert
 import Database.Hedsql.Tests.Queries
+import Database.Hedsql.Tests.PrettyPrint
 import Database.Hedsql.Tests.TableManipulations
 import Database.Hedsql.Tests.Update
 

@@ -10,14 +10,14 @@ Portability : portable
 A collection of INSERT statements to be used in tests or as examples.
 -}
 module Database.Hedsql.Examples.Insert
-    ( 
-      -- * All vendors 
+    (
+      -- * All vendors
       juliusCeasar
     , gaiusJuliusCeasar
     , falseAge
     , withCols
     , defaultVal
-    
+
       -- * PostgreSQL
     , defaultValPostgreSQL
     )
@@ -73,20 +73,20 @@ countryId = col "countryId" integer
 ----------------------------------------
 -- All vendors
 ----------------------------------------
-        
+
 {-|
 MariaDB and PosgreSQL:
-> INSERT INTO "People" ("id", "title", "firstName", "lastName", "age", 
+> INSERT INTO "People" ("id", "title", "firstName", "lastName", "age",
 > "married", "passportNo", "countryId", "father")
 > VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, TRUE, NULL, 1, 2)
 
 SqLite:
-> INSERT INTO "People" ("id", "title", "firstName", "lastName", "age", 
+> INSERT INTO "People" ("id", "title", "firstName", "lastName", "age",
 > "married", "passportNo", "father", "countryId")
 > VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)
 -}
 juliusCeasar :: Insert a
-juliusCeasar = 
+juliusCeasar =
     insert "People"
         [ assign idC        $ intVal 1
         , assign title      $ stringVal "Mr"
@@ -133,8 +133,8 @@ The below statement is going to fail, because the age is below 0.
 > "countryId")
 > VALUES (NULL, 'Mr', 'Julius', 'Ceasar', -1, TRUE, NULL, NULL, 2)
 -}
-falseAge :: Insert a      
-falseAge = 
+falseAge :: Insert a
+falseAge =
     insert "People"
         [ assign title        null
         , assign firstName  $ stringVal "Julius"
@@ -146,7 +146,7 @@ falseAge =
         , assign countryId  $ intVal 2
         ]
 
-{-|        
+{-|
 @
 INSERT INTO "People"
   ("title", "firstName", "lastName", "age", "married", "passportNo"
@@ -155,10 +155,10 @@ INSERT INTO "People"
 @
 -}
 withCols :: Insert a
-withCols = 
+withCols =
     insert
         "People"
-        [ assign title       $ value "Mr" 
+        [ assign title       $ value "Mr"
         , assign firstName   $ value "Julius"
         , assign lastName    $ value "Ceasar"
         , assign age         $ intVal 2000
@@ -170,9 +170,18 @@ withCols =
 {-|
 This example doesn't define the types of the columns.
 @
-INSERT INTO "People"
-  ("firstName", "lastName", "age", "passportNo", "countryId")
-  VALUES ('Julius', 'Ceasar', 2000, NULL, NULL, 2)
+INSERT INTO "People" (
+  "firstName",
+  "lastName",
+  "age",
+  "passportNo",
+  "countryId")
+VALUES (
+  'Julius',
+  'Ceasar',
+  2000,
+  NULL,
+  2)
 @
 -}
 defaultVal :: Insert a
@@ -196,7 +205,7 @@ defaultVal =
 > VALUES (DEFAULT, 'Mr', 'Julius', 'Ceasar', 2000, TRUE, NULL, NULL, 2)
 -}
 defaultValPostgreSQL :: Insert P.PostgreSQL
-defaultValPostgreSQL = 
+defaultValPostgreSQL =
     insert "People"
         [ assign idC        $ null
         , assign title      $ value default_
@@ -210,7 +219,7 @@ defaultValPostgreSQL =
         ]
 
 {-|
-@   
+@
 INSERT INTO "People"
   ("title", "firstName", "lastName", "age", "passportNo", "countryId")
   VALUES
@@ -219,7 +228,7 @@ INSERT INTO "People"
 @
 -}
 --multiValsPostgreSQL :: Insert P.PostgreSQL
---multiValsPostgreSQL = 
+--multiValsPostgreSQL =
 --    insert
 --        "People"
 --        ["title", "firstName", "lastName", "age", "passportNo", "countryId"]

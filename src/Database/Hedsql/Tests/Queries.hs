@@ -44,7 +44,7 @@ testSelectDistinctSqLite = testCase "Select distinct" assertSelect
 ----------------------------------------
 -- Functions
 ----------------------------------------
-          
+
 testAdditionSqLite :: Test
 testAdditionSqLite = testCase "Addition" assertSelect
     where
@@ -53,7 +53,7 @@ testAdditionSqLite = testCase "Addition" assertSelect
             "Addition in query is incorrect"
             "SELECT \"age\" + 1 FROM \"People\""
             (S.parse addition)
-            
+
 testMultiplicationSqLite :: Test
 testMultiplicationSqLite = testCase "Multiplication" assertSelect
     where
@@ -71,7 +71,7 @@ testCurrentDateSqLite = testCase "Current date" assertSelect
             "Current date function in query is incorrect"
             "SELECT Date('now')"
             (S.parse selectCurrentDate)
-            
+
 testRandomSqLite :: Test
 testRandomSqLite = testCase "Random" assertSelect
     where
@@ -93,7 +93,7 @@ testCrossJoinSqLite = testCase "Cross join" assertFrom
             "Cross join is incorrect"
             "SELECT * FROM \"People\" CROSS JOIN \"Countries\""
             (S.parse fromCrossJoin)
-            
+
 testInnerJoinOnSqLite :: Test
 testInnerJoinOnSqLite = testCase "Inner join SqLite" assertFrom
     where
@@ -146,7 +146,7 @@ testLeftJoinUsing = testCase "Left join using" assertFrom
             ++ "USING (\"countryId\")"
             )
             (S.parse fromLeftJoinUsing)
- 
+
 testRightJoinOn :: Test
 testRightJoinOn = testCase "Right join on" assertFrom
     where
@@ -156,7 +156,7 @@ testRightJoinOn = testCase "Right join on" assertFrom
             (  "SELECT * FROM \"People\" RIGHT JOIN \"Countries\" "
             ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
-            (S.parse fromRightJoinOn) 
+            (S.parse fromRightJoinOn)
 
 testFullJoinOn :: Test
 testFullJoinOn = testCase "Full join on" assertFrom
@@ -167,7 +167,7 @@ testFullJoinOn = testCase "Full join on" assertFrom
             (  "SELECT * FROM \"People\" FULL JOIN \"Countries\" "
             ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
-            (S.parse fromFullJoinOn) 
+            (S.parse fromFullJoinOn)
 
 testLeftJoinOnAnd :: Test
 testLeftJoinOnAnd = testCase "Left join on and" assertFrom
@@ -224,6 +224,20 @@ testSubQuery = testCase "Sub-query in FROM clause" assertFrom
             "SELECT * FROM (SELECT * FROM \"People\") AS \"P\""
             (S.parse selectSubQuery)
 
+testNestedJoins :: Test
+testNestedJoins = testCase "Multiple joins in FROM clause" assertFrom
+    where
+        assertFrom :: Assertion
+        assertFrom = assertEqual
+            "Multiple joins in FROM clause is incorrect"
+           ("SELECT * "
+         ++ "FROM \"People\" "
+         ++ "INNER JOIN \"Countries\" "
+         ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\" "
+         ++ "INNER JOIN \"Addresses\" "
+         ++ "ON \"People\".\"personId\" = \"Addresses\".\"personId\"")
+            (S.parse nestedJoins)
+
 ----------------------------------------
 -- WHERE
 ----------------------------------------
@@ -236,18 +250,6 @@ testWhereAlias = testCase "WHERE clause with aliases" assertFrom
             "WHERE clause with aliases is incorrect"
             "SELECT * FROM \"People\" AS \"P\" WHERE \"P\".\"age\" > 5"
             (S.parse whereAlias)
-
-testLeftJoinWhere :: Test
-testLeftJoinWhere = testCase "Left join with WHERE clause" assertFrom
-    where
-        assertFrom :: Assertion
-        assertFrom = assertEqual
-            "Left join with WHERE clause is incorrect"
-            (  "SELECT * FROM \"People\" LEFT JOIN \"Countries\" "
-            ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\" "
-            ++ "WHERE \"Countries\".\"name\" = 'Italy'"
-            )
-            (S.parse leftJoinWhere)
 
 testWhereAnd :: Test
 testWhereAnd = testCase "WHERE clause with AND" assertFrom
@@ -294,7 +296,7 @@ testWhereBetween = testCase "WHERE clause with BETWEEN clause" assertFrom
             ++ "WHERE \"inhabitants\" BETWEEN 10000 AND 1000000"
             )
             (S.parse whereBetween)
- 
+
 testWhereExists :: Test
 testWhereExists = testCase "WHERE clause with EXISTS sub-query" assertFrom
     where
@@ -318,8 +320,8 @@ testOrderBy = testCase "ORDER BY clause" assertOrderBy
         assertOrderBy :: Assertion
         assertOrderBy = assertEqual
             "ORDER BY clause is incorrect"
-            (  "SELECT \"firstName\", \"lastName\" FROM \"People\" "
-            ++ "ORDER BY \"firstName\", \"lastName\""
+            (  "SELECT \"firstName\" FROM \"People\" "
+            ++ "ORDER BY \"firstName\""
             )
             (S.parse orderByQuery)
 
@@ -523,7 +525,7 @@ testExceptAll = testCase "SELECT EXCEPT ALL" assertUnion
             ++ "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse exceptAllQuery)
-            
+
 ----------------------------------------
 -- PostgreSQL
 ----------------------------------------
@@ -578,8 +580,8 @@ tests = testGroup "Select"
         , testCrossJoinAlias
         , testCrossRefAlias
         , testSubQuery
+        , testNestedJoins
         , testWhereAlias
-        , testLeftJoinWhere
         , testWhereAnd
         , testWhereInValues
         , testWhereInSelect
