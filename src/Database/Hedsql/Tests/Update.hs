@@ -58,6 +58,19 @@ testDefaultVal = testCase "Update with defaultValue" assertUpdate
             "UPDATE \"People\" SET \"title\" = DEFAULT WHERE \"personId\" = 1"
             (P.parse defaultVal)
 
+testReturning :: Test
+testReturning = testCase "Update with RETURNING clause" assertUpdate
+    where
+        assertUpdate :: Assertion
+        assertUpdate = assertEqual
+            "Update with a RETURNING clause is incorrect"
+            (   "UPDATE \"People\" SET \"age\" = 2050 "
+            ++  "WHERE \"personId\" = 1 "
+            ++  "RETURNING \"personId\""
+            )
+            (P.parse updateReturningClause)
+
+
 --------------------------------------------------------------------------------
 -- PUBLIC
 --------------------------------------------------------------------------------
@@ -71,5 +84,6 @@ tests = testGroup "Update"
         ]
     , testGroup "PostgreSQL"
         [ testDefaultVal
+        , testReturning
         ]
     ]
