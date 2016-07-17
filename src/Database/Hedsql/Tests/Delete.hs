@@ -61,7 +61,11 @@ testReturning = testCase "Delete with RETURNING clause" assertDelete
 -- | Gather all tests.
 tests :: Test
 tests = testGroup "Delete"
-    [ testNotEqualTo
-    , testSubQuery
-    , testReturning
+    [ testGroup "AllVendors"
+        [ testNotEqualTo
+        , testSubQuery
+        ]
+    , testGroup "PostgreSQL"
+        [ testReturning
+        ]
     ]
