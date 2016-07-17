@@ -75,6 +75,7 @@ module Database.Hedsql.Examples.Select
     , multiplication
     , selectCurrentDate
     , selectRandom
+    , selectLastInsertId
 
       -- ** Combined queries
     , unionQuery
@@ -872,6 +873,20 @@ PostgreSQL & SqLite
 selectRandom :: Query [Int] a
 selectRandom = do
     select random
+
+{-|
+PostgreSQL:
+> SELECT LASTVAL()
+
+MariaDB:
+> SELECT LAST_INSERT_ID()
+
+SQLite:
+> SELECT last_insert_row_id()
+-}
+selectLastInsertId :: Query [Int] a
+selectLastInsertId = do
+    select lastInsertId
 
 --------------------
 -- Combined queries

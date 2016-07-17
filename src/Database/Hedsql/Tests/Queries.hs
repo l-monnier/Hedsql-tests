@@ -12,8 +12,9 @@ import Test.Framework                 (Test, testGroup)
 import Test.Framework.Providers.HUnit (testCase)
 import Test.HUnit              hiding (Test)
 
-import qualified Database.Hedsql.SqLite     as S
 import qualified Database.Hedsql.PostgreSQL as P
+import qualified Database.Hedsql.MariaDB    as M
+import qualified Database.Hedsql.SqLite     as S
 
 --------------------------------------------------------------------------------
 -- PRIVATE
@@ -80,6 +81,34 @@ testRandomSqLite = testCase "Random" assertSelect
             "Random function in query is incorrect"
             "SELECT random()"
             (S.parse selectRandom)
+
+testLastInsertIdPostgreSQL :: Test
+testLastInsertIdPostgreSQL =
+    testCase "Last Insert ID for PostgresQL" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "Last Insert ID for PostgreSQL is incorrect"
+            "SELECT lastval()"
+            (P.parse selectLastInsertId)
+
+testLastInsertIdMariaDB :: Test
+testLastInsertIdMariaDB = testCase "Last Insert ID for MariaDB" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "Last Insert ID for MariaDB is incorrect"
+            "SELECT LAST_INSERT_ID()"
+            (M.parse selectLastInsertId)
+
+testLastInsertIdSqLite :: Test
+testLastInsertIdSqLite = testCase "Last Insert ID for SqLite" assertSelect
+    where
+        assertSelect :: Assertion
+        assertSelect = assertEqual
+            "Last Insert ID for SqLite is incorrect"
+            "SELECT last_insert_rowid()"
+            (S.parse selectLastInsertId)
 
 ----------------------------------------
 -- FROM
@@ -608,7 +637,14 @@ tests = testGroup "Select"
         , testRandomSqLite
         ]
     , testGroup "PostgreSQL"
-        [ testSelectDistinctOnPostgreSQL
+        [ testLastInsertIdPostgreSQL
+        , testSelectDistinctOnPostgreSQL
         , testFromLateralPostgreSQL
+        ]
+    , testGroup "MariaDb"
+        [ testLastInsertIdMariaDB
+        ]
+    , testGroup "SqLite"
+        [ testLastInsertIdSqLite
         ]
     ]
