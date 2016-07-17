@@ -10,8 +10,13 @@ Portability : portable
 A collection of DELETE statements to be used in tests or as examples.
 -}
 module Database.Hedsql.Examples.Delete
-    ( deleteNotEqualTo
+    (
+      -- * All vendors
+      deleteNotEqualTo
     , deleteSubQuery
+
+      -- * PostgreSQL
+    , deleteReturningClause
     ) where
 
 --------------------------------------------------------------------------------
@@ -20,6 +25,7 @@ module Database.Hedsql.Examples.Delete
 
 import Database.Hedsql.Ext
 import Database.Hedsql.SqLite
+import qualified Database.Hedsql.PostgreSQL as P
 
 --------------------------------------------------------------------------------
 -- PUBLIC
@@ -54,3 +60,20 @@ deleteSubQuery = do
                 where_ (col "name" (varchar 128) /== value "Switzerland")
             )
         )
+
+----------------------------------------
+-- PostgreSQL
+----------------------------------------
+
+{-|
+@
+DELETE FROM "People"
+WHERE "age" = 20
+RETURNING "personId"
+@
+-}
+deleteReturningClause :: DeleteStmt P.PostgreSQL
+deleteReturningClause = do
+    deleteFrom "People"
+    where_ (col "age" integer /== value (20::Int))
+    P.returning $ colRefWrap $ col "personId" integer
