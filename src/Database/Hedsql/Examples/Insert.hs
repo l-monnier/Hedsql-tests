@@ -20,6 +20,7 @@ module Database.Hedsql.Examples.Insert
 
       -- * PostgreSQL
     , defaultValPostgreSQL
+    , returningPostgreSQL
     )
     where
 
@@ -85,7 +86,7 @@ SqLite:
 > "married", "passportNo", "father", "countryId")
 > VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)
 -}
-juliusCeasar :: Insert a
+juliusCeasar :: InsertStmt a
 juliusCeasar =
     insert "People"
         [ assign idC        $ intVal 1
@@ -112,7 +113,7 @@ SqLite:
 > , "father", "countryId")
 > VALUES (1, 'Mr', 'Gaius Julius', 'Ceasar', 2000, 1, NULL, NULL, 2)
 -}
-gaiusJuliusCeasar :: Insert a
+gaiusJuliusCeasar :: InsertStmt a
 gaiusJuliusCeasar =
     insert "People"
         [ assign idC        $ value (2::Int)
@@ -133,7 +134,7 @@ The below statement is going to fail, because the age is below 0.
 > "countryId")
 > VALUES (NULL, 'Mr', 'Julius', 'Ceasar', -1, TRUE, NULL, NULL, 2)
 -}
-falseAge :: Insert a
+falseAge :: InsertStmt a
 falseAge =
     insert "People"
         [ assign title        null
@@ -154,7 +155,7 @@ INSERT INTO "People"
   VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2)
 @
 -}
-withCols :: Insert a
+withCols :: InsertStmt a
 withCols =
     insert
         "People"
@@ -184,7 +185,7 @@ VALUES (
   2)
 @
 -}
-defaultVal :: Insert a
+defaultVal :: InsertStmt a
 defaultVal =
     insert
         "People"
@@ -204,7 +205,7 @@ defaultVal =
 > ("title", "firstName", "lastName", "age", "passportNo", "father", "countryId")
 > VALUES (DEFAULT, 'Mr', 'Julius', 'Ceasar', 2000, TRUE, NULL, NULL, 2)
 -}
-defaultValPostgreSQL :: Insert P.PostgreSQL
+defaultValPostgreSQL :: InsertStmt P.PostgreSQL
 defaultValPostgreSQL =
     insert "People"
         [ assign idC        $ null
@@ -217,6 +218,42 @@ defaultValPostgreSQL =
         , assign father       null
         , assign countryId  $ intVal 2
         ]
+
+{-|
+@
+INSERT INTO "People" (
+  "title",
+  "firstName",
+  "lastName",
+  "age",
+  "married",
+  "passportNo",
+  "countryId",
+  "father")
+VALUES (
+  'Mr',
+  'Julius',
+  'Ceasar',
+  2000,
+  TRUE,
+  NULL,
+  1,
+  2)
+@
+-}
+returningPostgreSQL :: InsertStmt P.PostgreSQL
+returningPostgreSQL = do
+    insert "People"
+        [ assign title      $ stringVal "Mr"
+        , assign firstName  $ stringVal "Julius"
+        , assign lastName   $ stringVal "Ceasar"
+        , assign age        $ intVal 2000
+        , assign married    $ boolVal True
+        , assign passportNo   null
+        , assign father     $ intVal 2
+        , assign countryId  $ intVal 2
+        ]
+    P.returning (colRefWrap idC)
 
 {-|
 @

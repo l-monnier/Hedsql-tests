@@ -6,17 +6,17 @@ module Database.Hedsql.Tests.PrettyPrint
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import Database.Hedsql.Examples.Create
-import Database.Hedsql.Examples.Delete
-import Database.Hedsql.Examples.Insert as Insert
-import Database.Hedsql.Examples.Select
-import Database.Hedsql.Examples.Update
+import           Database.Hedsql.Examples.Create
+import           Database.Hedsql.Examples.Delete
+import           Database.Hedsql.Examples.Insert as Insert
+import           Database.Hedsql.Examples.Select
+import           Database.Hedsql.Examples.Update
 
-import Test.Framework                 (Test, testGroup)
-import Test.Framework.Providers.HUnit (testCase)
-import Test.HUnit                     hiding (Test)
+import           Test.Framework                  (Test, testGroup)
+import           Test.Framework.Providers.HUnit  (testCase)
+import           Test.HUnit                      hiding (Test)
 
-import qualified Database.Hedsql.SqLite as S
+import qualified Database.Hedsql.SqLite          as S
 
 --------------------------------------------------------------------------------
 -- PRIVATE

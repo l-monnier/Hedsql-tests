@@ -56,98 +56,62 @@ import Database.Hedsql.SqLite
 -- Full examples
 ----------------------------------------
 
-{-|
-MariaDB and SqLite:
-@
-CREATE TABLE "Countries" (
-  "countryId"   INTEGER PRIMARY KEY AUTOINCREMENT,
-  "name"        VARCHAR(256) NOT NULL, UNIQUE,
-  "size"        INTEGER,
-  "inhabitants" INTEGER
-)
-@
+{-| MariaDB and SqLite: @ CREATE TABLE "Countries" ( "countryId"
+INTEGER PRIMARY KEY AUTOINCREMENT, "name" VARCHAR(256) NOT NULL,
+UNIQUE, "size" INTEGER, "inhabitants" INTEGER ) @
 
-PostgreSQL:
-@
-CREATE TABLE "Countries" (
-    "countryId"   serial PRIMARY KEY,
-    "name"        varchar(256) NOT NUL, UNIQUE,
-    "size"        integer,
-    "inhabitants" integer
-)
-@
+PostgreSQL: @ CREATE TABLE "Countries" ( "countryId" serial PRIMARY
+KEY, "name" varchar(256) NOT NUL, UNIQUE, "size" integer,
+"inhabitants" integer ) @
 -}
 countries :: CreateStmt a
-countries =
-    createTable
-        "Countries"
-        [ wrap  (col "countryId"   integer)       /++ primary True
-        , wrap  (col "name"        (varchar 256)) /++ [notNull, unique]
-        , wrap $ col "size"        integer
-        , wrap $ col "inhabitants" integer
-        ]
+countries = createTable "Countries"
+    [ wrap (col "countryId" integer) /++ primary True
+    , wrap (col "name" (varchar 256)) /++ [notNull, unique]
+    , wrap $ col "size" integer
+    , wrap $ col "inhabitants" integer
+    ]
 
-{-|
-MariaDB and SqLite:
-@
-CREATE TABLE "People" (
-   "personId"   INTEGER PRIMARY KEY AUTOINCREMENT,
-   "title"      CHAR(2) DEFAULT('Ms')
-   "firstName"  VARCHAR(256) NOT NULL,
-   "lastName"   VARCHAR(256) NOT NULL,
-   "age"        INTEGER CHECK ("age" > -1),
-   "married"    BOOLEAN DEFAULT(FALSE), NOT NULL
-   "father"     INTEGER REFERENCES "People"("personId")
-   "passportNo" VARCHAR(256) UNIQUE,
-   "countryId"  INTEGER REFERENCES "Countries"("countryId")
-)
-@
+{-| MariaDB and SqLite: @ CREATE TABLE "People" ( "personId" INTEGER
+PRIMARY KEY AUTOINCREMENT, "title" CHAR(2) DEFAULT('Ms') "firstName"
+VARCHAR(256) NOT NULL, "lastName" VARCHAR(256) NOT NULL, "age" INTEGER
+CHECK ("age" > -1), "married" BOOLEAN DEFAULT(FALSE), NOT NULL
+"father" INTEGER REFERENCES "People"("personId") "passportNo"
+VARCHAR(256) UNIQUE, "countryId" INTEGER REFERENCES
+"Countries"("countryId") ) @
 
-PostgreSQL:
-@
-CREATE TABLE "People" (
-   "personId"   serial  PRIMARY KEY,
-   "title"      char(2) DEFAULT('Ms')
-   "firstName"  varchar(256) NOT NULL,
-   "lastName"   varchar(256) NOT NULL,
-   "age"        integer CHECK ("age" > -1),
-   "married"    boolean DEFAULT(FALSE), NOT NULL
-   "passportNo" varchar(256) UNIQUE,
-   "father"     integer REFERENCES "People"("personId")
-   "countryId"  integer REFERENCES "Countries"("countryId")
-)
-@
+PostgreSQL: @ CREATE TABLE "People" ( "personId" serial PRIMARY KEY,
+"title" char(2) DEFAULT('Ms') "firstName" varchar(256) NOT NULL,
+"lastName" varchar(256) NOT NULL, "age" integer CHECK ("age" > -1),
+"married" boolean DEFAULT(FALSE), NOT NULL "passportNo" varchar(256)
+UNIQUE, "father" integer REFERENCES "People"("personId") "countryId"
+integer REFERENCES "Countries"("countryId") ) @
 -}
 people :: CreateStmt a
-people =
-    createTable
-        "People"
-        [ wrap (col "personId"   integer)       /++ primary True
-        , wrap (col "title"      (char 2))      /++ defaultValue (value "Ms")
-        , wrap (col "firstName"  (varchar 256)) /++ notNull
-        , wrap (col "lastName"   (varchar 256)) /++ notNull
-        , wrap age /++ check (age /> value (-1::Int))
-        , wrap (col "married"    boolean)       /++ [ defaultValue (value False)
-                                                    , notNull
-                                                    ]
-        , wrap (col "passportNo" (varchar 256)) /++ unique
-        , wrap (col "father"     integer) /++ foreignKey "People" "personId"
-        , wrap (col "countryId"  integer) /++ foreignKey "Countries" "countryId"
-        ]
-    where
-        age = col "age" integer
+people = createTable "People"
+    [ wrap (col "personId" integer) /++ primary True
+    , wrap (col "title" (char 2)) /++ defaultValue (value "Ms")
+    , wrap (col "firstName" (varchar 256)) /++ notNull
+    , wrap (col "lastName" (varchar 256)) /++ notNull
+    , wrap age /++ check (age /> value (-1::Int))
+    , wrap (col "married" boolean) /++ [defaultValue (value False), notNull]
+    , wrap (col "passportNo" (varchar 256)) /++ unique
+    , wrap (col "father" integer) /++ foreignKey "People" "personId"
+    , wrap (col "countryId" integer) /++ foreignKey "Countries" "countryId"
+    ]
+    where age = col "age" integer
 ----------------------------------------
 -- Basics
 ----------------------------------------
 
 -- | > CREATE TABLE "People" ("firstName" varchar(256))
 simpleTable :: CreateStmt a
-simpleTable = createTable "People" [wrap (col "firstName" $ varchar 256)]
+simpleTable = createTable "People"
+    [wrap (col "firstName" $ varchar 256)]
 
 -- | CREATE TABLE "People" ("country" integer DEFAULT(1))
 defaultVal :: CreateStmt a
-defaultVal = createTable
-    "People"
+defaultVal = createTable "People"
     [wrap (col "country" integer) /++ defaultValue (value (1::Int))]
 
 ----------------------------------------

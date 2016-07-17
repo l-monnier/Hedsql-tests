@@ -4,6 +4,7 @@ module Main where
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Database.Hedsql.Tests.Connection.SqLiteSimple
 import Database.Hedsql.Tests.Delete
 import Database.Hedsql.Tests.Insert
 import Database.Hedsql.Tests.Queries
@@ -26,4 +27,5 @@ main = defaultMain
     , Database.Hedsql.Tests.TableManipulations.tests
     , Database.Hedsql.Tests.Update.tests
     , Database.Hedsql.Tests.PrettyPrint.tests
+    , Database.Hedsql.Tests.Connection.SqLiteSimple.tests
     ]

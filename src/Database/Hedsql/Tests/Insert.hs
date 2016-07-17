@@ -71,6 +71,24 @@ testDefaultValPostgreSQL = testCase "Insert with a DEFAULT value" assertInsert
             )
             (P.parse defaultValPostgreSQL)
 
+
+testReturningPostgreSQL :: Test
+testReturningPostgreSQL = testCase "Insert with RETURNING clause" assertInsert
+    where
+        assertInsert :: Assertion
+        assertInsert = assertEqual
+            "Insert with RETURNING clause is incorrect"
+            (  "INSERT INTO \"People\" "
+            ++ "(\"title\", \"firstName\", \"lastName\", \"age\", "
+            ++ "\"married\", \"passportNo\", \"father\", \"countryId\") "
+            ++ "VALUES ('Mr', 'Julius', 'Ceasar', 2000, "
+            ++ "TRUE, NULL, 2, 2) "
+            ++ "RETURNING \"id\""
+            )
+            (P.parse returningPostgreSQL)
+
+
+
 --testMultiValsPostgreSQL :: Test
 --testMultiValsPostgreSQL = testCase "Multiple inserts" assertInsert
 --    where
@@ -97,9 +115,10 @@ tests = testGroup "Insert"
         ]
     , testGroup "SqLite"
         [ testJulius
-        ] 
+        ]
     , testGroup "PostgreSQL"
         [ testDefaultValPostgreSQL
+        , testReturningPostgreSQL
         --, testMultiValsPostgreSQL
         ]
     ]
