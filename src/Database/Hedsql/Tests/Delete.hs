@@ -42,6 +42,10 @@ testSubQuery = testCase "Delete with sub-query" assertDelete
             )
             (S.parse deleteSubQuery)
 
+----------------------------------------
+-- PostgreSQL
+----------------------------------------
+
 testReturning :: Test
 testReturning = testCase "Delete with RETURNING clause" assertDelete
     where
