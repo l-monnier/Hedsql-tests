@@ -13,6 +13,7 @@ import Test.Framework.Providers.HUnit (testCase)
 import Test.HUnit              hiding (Test)
 
 import qualified Database.Hedsql.SqLite     as S
+import qualified Database.Hedsql.MariaDB    as M
 import qualified Database.Hedsql.PostgreSQL as P
 
 --------------------------------------------------------------------------------
@@ -46,17 +47,35 @@ testSubQuery = testCase "Delete with sub-query" assertDelete
 -- PostgreSQL
 ----------------------------------------
 
-testReturning :: Test
-testReturning = testCase "Delete with RETURNING clause" assertDelete
+testReturningPostgreSQL :: Test
+testReturningPostgreSQL =
+    testCase "Delete with RETURNING clause for PostgreSQL" assertDelete
     where
         assertDelete :: Assertion
         assertDelete = assertEqual
-            "Delete with RETURNING is incorrect"
+            "Delete with RETURNING for PostgreSQL is incorrect"
             (  "DELETE FROM \"People\" "
             ++ "WHERE \"age\" = 20 "
             ++ "RETURNING \"personId\""
             )
             (P.parse deleteReturningClause)
+
+----------------------------------------
+-- MariaDB
+----------------------------------------
+
+testReturningMariaDB :: Test
+testReturningMariaDB =
+    testCase "Delete with RETURNING clause for MariaDB" assertDelete
+    where
+        assertDelete :: Assertion
+        assertDelete = assertEqual
+            "Delete with RETURNING for MariaDB is incorrect"
+            (  "DELETE FROM \"People\" "
+            ++ "WHERE \"age\" = 20 "
+            ++ "RETURNING \"personId\""
+            )
+            (M.parse deleteReturningClauseMariaDB)
 
 --------------------------------------------------------------------------------
 -- PUBLIC
@@ -70,6 +89,9 @@ tests = testGroup "Delete"
         , testSubQuery
         ]
     , testGroup "PostgreSQL"
-        [ testReturning
+        [ testReturningPostgreSQL
+        ]
+    , testGroup "MariaDB"
+        [ testReturningMariaDB
         ]
     ]

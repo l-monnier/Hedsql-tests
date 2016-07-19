@@ -17,14 +17,18 @@ module Database.Hedsql.Examples.Delete
 
       -- * PostgreSQL
     , deleteReturningClause
+
+      -- * MariaDB
+    , deleteReturningClauseMariaDB
     ) where
 
 --------------------------------------------------------------------------------
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import Database.Hedsql.Ext
+import Database.Hedsql.Ext()
 import Database.Hedsql.SqLite
+import qualified Database.Hedsql.MariaDB as M
 import qualified Database.Hedsql.PostgreSQL as P
 
 --------------------------------------------------------------------------------
@@ -77,3 +81,20 @@ deleteReturningClause = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))
     P.returning $ colRefWrap $ col "personId" integer
+
+----------------------------------------
+-- MariaDB
+----------------------------------------
+
+{-|
+@
+DELETE FROM "People"
+WHERE "age" = 20
+RETURNING "personId"
+@
+-}
+deleteReturningClauseMariaDB :: DeleteStmt M.MariaDB
+deleteReturningClauseMariaDB = do
+    deleteFrom "People"
+    where_ (col "age" integer /== value (20::Int))
+    M.returning $ colRefWrap $ col "personId" integer
