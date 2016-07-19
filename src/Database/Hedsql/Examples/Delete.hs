@@ -80,7 +80,7 @@ deleteReturningClause :: DeleteStmt P.PostgreSQL
 deleteReturningClause = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))
-    P.returning $ colRefWrap $ col "personId" integer
+    P.returning $ col "personId" integer
 
 ----------------------------------------
 -- MariaDB
@@ -97,4 +97,4 @@ deleteReturningClauseMariaDB :: DeleteStmt M.MariaDB
 deleteReturningClauseMariaDB = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))
-    M.returning $ colRefWrap $ col "personId" integer
+    M.returning $ col "personId" integer

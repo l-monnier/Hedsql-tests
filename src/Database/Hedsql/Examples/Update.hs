@@ -25,7 +25,7 @@ module Database.Hedsql.Examples.Update
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import           Database.Hedsql.Ext
+import           Database.Hedsql.Ext()
 import           Database.Hedsql.SqLite
 import           Database.Hedsql.Drivers.PostgreSQL.Constructor
 import qualified Database.Hedsql.PostgreSQL                      as P
@@ -88,6 +88,6 @@ updateReturningClause :: UpdateStmt P.PostgreSQL
 updateReturningClause = do
     update "People" [assign (col "age" integer) $ intVal 2050]
     where_ (idC /== intVal 1)
-    P.returning $ colRefWrap idC
+    P.returning idC
     where
        idC = col "personId" integer

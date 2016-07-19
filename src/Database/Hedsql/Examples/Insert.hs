@@ -253,7 +253,7 @@ returningPostgreSQL = do
         , assign father     $ intVal 2
         , assign countryId  $ intVal 2
         ]
-    P.returning (colRefWrap idC)
+    P.returning idC
 
 {-|
 @
