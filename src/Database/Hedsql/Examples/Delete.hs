@@ -41,7 +41,7 @@ DELETE FROM "People"
 WHERE "age" <> 20
 @
 -}
-deleteNotEqualTo :: DeleteStmt a
+deleteNotEqualTo :: DeleteStmt colType dbVendor
 deleteNotEqualTo = do
     deleteFrom "People"
     where_ (col "age" integer /<> value (20::Int))
@@ -54,7 +54,7 @@ WHERE "personId" IN (SELECT "personId"
                      WHERE "name" = 'Switzerland')
 @
 -}
-deleteSubQuery :: DeleteStmt a
+deleteSubQuery :: DeleteStmt colType dbVendor
 deleteSubQuery = do
     deleteFrom "People"
     where_ ("personId" `in_`
@@ -76,7 +76,7 @@ WHERE "age" = 20
 RETURNING "personId"
 @
 -}
-deleteReturningClause :: DeleteStmt P.PostgreSQL
+deleteReturningClause :: DeleteStmt [Int] P.PostgreSQL
 deleteReturningClause = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))
@@ -93,7 +93,7 @@ WHERE "age" = 20
 RETURNING "personId"
 @
 -}
-deleteReturningClauseMariaDB :: DeleteStmt M.MariaDB
+deleteReturningClauseMariaDB :: DeleteStmt [Int] M.MariaDB
 deleteReturningClauseMariaDB = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))

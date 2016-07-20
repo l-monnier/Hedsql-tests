@@ -86,7 +86,7 @@ SqLite:
 > "married", "passportNo", "father", "countryId")
 > VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)
 -}
-juliusCeasar :: InsertStmt a
+juliusCeasar :: InsertStmt colType dbVendor
 juliusCeasar =
     insert "People"
         [ assign idC        $ intVal 1
@@ -113,7 +113,7 @@ SqLite:
 > , "father", "countryId")
 > VALUES (1, 'Mr', 'Gaius Julius', 'Ceasar', 2000, 1, NULL, NULL, 2)
 -}
-gaiusJuliusCeasar :: InsertStmt a
+gaiusJuliusCeasar :: InsertStmt colType dbVendor
 gaiusJuliusCeasar =
     insert "People"
         [ assign idC        $ value (2::Int)
@@ -134,7 +134,7 @@ The below statement is going to fail, because the age is below 0.
 > "countryId")
 > VALUES (NULL, 'Mr', 'Julius', 'Ceasar', -1, TRUE, NULL, NULL, 2)
 -}
-falseAge :: InsertStmt a
+falseAge :: InsertStmt colType dbVendor
 falseAge =
     insert "People"
         [ assign title        null
@@ -155,7 +155,7 @@ INSERT INTO "People"
   VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2)
 @
 -}
-withCols :: InsertStmt a
+withCols :: InsertStmt colType dbVendor
 withCols =
     insert
         "People"
@@ -185,7 +185,7 @@ VALUES (
   2)
 @
 -}
-defaultVal :: InsertStmt a
+defaultVal :: InsertStmt colType dbVendor
 defaultVal =
     insert
         "People"
@@ -205,7 +205,7 @@ defaultVal =
 > ("title", "firstName", "lastName", "age", "passportNo", "father", "countryId")
 > VALUES (DEFAULT, 'Mr', 'Julius', 'Ceasar', 2000, TRUE, NULL, NULL, 2)
 -}
-defaultValPostgreSQL :: InsertStmt P.PostgreSQL
+defaultValPostgreSQL :: InsertStmt colType P.PostgreSQL
 defaultValPostgreSQL =
     insert "People"
         [ assign idC        $ null
@@ -241,7 +241,7 @@ VALUES (
   2)
 @
 -}
-returningPostgreSQL :: InsertStmt P.PostgreSQL
+returningPostgreSQL :: InsertStmt [Int] P.PostgreSQL
 returningPostgreSQL = do
     insert "People"
         [ assign title      $ stringVal "Mr"

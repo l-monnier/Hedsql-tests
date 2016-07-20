@@ -45,7 +45,7 @@ SET "age" = 2050
 WHERE "lastName" = 'Ceasar'
 @
 -}
-equalTo :: UpdateStmt a
+equalTo :: UpdateStmt colType dbVendor
 equalTo = do
     update "People" [assign (col "age" integer) $ intVal 2050]
     where_ (col "lastName" (varchar 256) /== value "Ceasar")
@@ -54,7 +54,7 @@ equalTo = do
 UPDATE "People" SET "age" = "age" + 1 WHERE "countryId" IN
   (SELECT "countryId" FROM "Countries" WHERE "name" = 'Italy')
 -}
-updateSelect :: UpdateStmt a
+updateSelect :: UpdateStmt colType dbVendor
 updateSelect = do
     update "People" [assign age $ age /+ intVal 1]
     where_ (countryId `in_` execStmt subSelect)
@@ -71,7 +71,7 @@ updateSelect = do
 ----------------------------------------
 
 -- | > UPDATE "People" SET "title" = DEFAULT WHERE "personId" = 1
-defaultVal :: UpdateStmt P.PostgreSQL
+defaultVal :: UpdateStmt [Int] P.PostgreSQL
 defaultVal = do
     update "People" [assign "title" default_]
     where_ (col "personId" integer /== intVal 1)
@@ -84,7 +84,7 @@ WHERE "personId" = 1
 RETURNING "id"
 @
 -}
-updateReturningClause :: UpdateStmt P.PostgreSQL
+updateReturningClause :: UpdateStmt [Int] P.PostgreSQL
 updateReturningClause = do
     update "People" [assign (col "age" integer) $ intVal 2050]
     where_ (idC /== intVal 1)
