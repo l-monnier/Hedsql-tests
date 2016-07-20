@@ -1,0 +1,42 @@
+name:           Hedsql-SQLiteSimple
+version:        0.1
+cabal-version:  >= 1.8
+build-type:     Simple
+author:         Leonard Monnier
+stability:      Alpha
+maintainer:     Leonard Monnier <leonard.monnier@gmail.com>
+synopsis:       Use of Hedsql with the SQLite-simple library.
+description:
+                Collection of functions easing the use of Hedsql
+                with the SQLite-simple library.
+homepage:       https://github.com/momomimachli/Hedsql-SQLite-simple
+category:       Database
+copyright:      (c) 2015 Leonard Monnier
+license:        GPL-3
+tested-with:    GHC==7.10.1
+
+library
+  hs-source-dirs:   src
+  build-depends:
+                    base
+                  , Hedsql
+                  , sqlite-simple
+                  , text
+  ghc-options:     -Wall
+  exposed-modules: Database.Hedsql.Connection.SqLite.Simple
+
+test-suite Tests
+  type:            exitcode-stdio-1.0
+  x-uses-tf:       true
+  ghc-options:     -Wall -rtsopts
+  build-depends:
+                   base
+                 , HUnit
+                 , QuickCheck
+                 , test-framework
+                 , test-framework-quickcheck2
+                 , test-framework-hunit
+                 , Hedsql-SQLiteSimple
+  other-modules:   Database.SQLite.Simple.HedsqlTest
+  hs-source-dirs:  tests
+  main-is:         Tests.hs
