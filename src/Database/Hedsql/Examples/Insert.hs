@@ -241,7 +241,7 @@ VALUES (
   2)
 @
 -}
-returningPostgreSQL :: InsertStmt [Int] P.PostgreSQL
+returningPostgreSQL :: InsertStmt Int P.PostgreSQL
 returningPostgreSQL = do
     insert "People"
         [ assign title      $ stringVal "Mr"

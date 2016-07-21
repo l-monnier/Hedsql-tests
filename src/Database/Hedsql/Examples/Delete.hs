@@ -76,7 +76,7 @@ WHERE "age" = 20
 RETURNING "personId"
 @
 -}
-deleteReturningClause :: DeleteStmt [Int] P.PostgreSQL
+deleteReturningClause :: DeleteStmt Int P.PostgreSQL
 deleteReturningClause = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))
@@ -93,7 +93,7 @@ WHERE "age" = 20
 RETURNING "personId"
 @
 -}
-deleteReturningClauseMariaDB :: DeleteStmt [Int] M.MariaDB
+deleteReturningClauseMariaDB :: DeleteStmt Int M.MariaDB
 deleteReturningClauseMariaDB = do
     deleteFrom "People"
     where_ (col "age" integer /== value (20::Int))

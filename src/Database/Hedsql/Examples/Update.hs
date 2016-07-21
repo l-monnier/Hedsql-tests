@@ -71,7 +71,7 @@ updateSelect = do
 ----------------------------------------
 
 -- | > UPDATE "People" SET "title" = DEFAULT WHERE "personId" = 1
-defaultVal :: UpdateStmt [Int] P.PostgreSQL
+defaultVal :: UpdateStmt Int P.PostgreSQL
 defaultVal = do
     update "People" [assign "title" default_]
     where_ (col "personId" integer /== intVal 1)
@@ -84,7 +84,7 @@ WHERE "personId" = 1
 RETURNING "id"
 @
 -}
-updateReturningClause :: UpdateStmt [Int] P.PostgreSQL
+updateReturningClause :: UpdateStmt Int P.PostgreSQL
 updateReturningClause = do
     update "People" [assign (col "age" integer) $ intVal 2050]
     where_ (idC /== intVal 1)
