@@ -18,7 +18,7 @@ module Database.Hedsql.Examples.Drop
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import Database.Hedsql.Ext
+import Database.Hedsql.Ext()
 import Database.Hedsql.SqLite
 
 --------------------------------------------------------------------------------
@@ -26,9 +26,9 @@ import Database.Hedsql.SqLite
 --------------------------------------------------------------------------------
 
 -- | > DROP TABLE "People"
-dropTableStmt :: Drop a
+dropTableStmt :: Drop dbVendor
 dropTableStmt = dropTable "People"
 
 -- | > DROP IF EXISTS "People"
-dropTableIfExistsStmt :: Drop a
+dropTableIfExistsStmt :: Drop dbVendor
 dropTableIfExistsStmt = dropTableIfExists "People"

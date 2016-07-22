@@ -40,31 +40,31 @@ import           Prelude                                         hiding (null)
 --------------------------------------------------------------------------------
 
 -- Define the columns
-idC :: Column Int a
+idC :: Column Int dbVendor
 idC = col "id" integer
 
-title :: Column String a
+title :: Column String dbVendor
 title = col "title" $ char 2
 
-firstName :: Column String a
+firstName :: Column String dbVendor
 firstName = col "firstName" $ varchar 256
 
-lastName :: Column String a
+lastName :: Column String dbVendor
 lastName = col "lastName" $ varchar 256
 
-age :: Column Int a
+age :: Column Int dbVendor
 age = col "age" integer
 
-married :: Column Bool a
+married :: Column Bool dbVendor
 married    = col "married" boolean
 
-passportNo :: Column String a
+passportNo :: Column String dbVendor
 passportNo = col "passportNo" $ varchar 256
 
-father :: Column Int a
+father :: Column Int dbVendor
 father = col "father" integer
 
-countryId :: Column Int a
+countryId :: Column Int dbVendor
 countryId = col "countryId" integer
 
 --------------------------------------------------------------------------------

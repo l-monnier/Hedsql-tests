@@ -45,7 +45,7 @@ module Database.Hedsql.Examples.Create
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import Database.Hedsql.Ext
+import Database.Hedsql.Ext()
 import Database.Hedsql.SqLite
 
 --------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ PostgreSQL: @ CREATE TABLE "Countries" ( "countryId" serial PRIMARY
 KEY, "name" varchar(256) NOT NUL, UNIQUE, "size" integer,
 "inhabitants" integer ) @
 -}
-countries :: CreateStmt a
+countries :: CreateStmt dbVendor
 countries = createTable "Countries"
     [ wrap (col "countryId" integer) /++ primary True
     , wrap (col "name" (varchar 256)) /++ [notNull, unique]
@@ -87,7 +87,7 @@ PostgreSQL: @ CREATE TABLE "People" ( "personId" serial PRIMARY KEY,
 UNIQUE, "father" integer REFERENCES "People"("personId") "countryId"
 integer REFERENCES "Countries"("countryId") ) @
 -}
-people :: CreateStmt a
+people :: CreateStmt dbVendor
 people = createTable "People"
     [ wrap (col "personId" integer) /++ primary True
     , wrap (col "title" (char 2)) /++ defaultValue (value "Ms")
@@ -105,12 +105,12 @@ people = createTable "People"
 ----------------------------------------
 
 -- | > CREATE TABLE "People" ("firstName" varchar(256))
-simpleTable :: CreateStmt a
+simpleTable :: CreateStmt dbVendor
 simpleTable = createTable "People"
     [wrap (col "firstName" $ varchar 256)]
 
 -- | CREATE TABLE "People" ("country" integer DEFAULT(1))
-defaultVal :: CreateStmt a
+defaultVal :: CreateStmt dbVendor
 defaultVal = createTable "People"
     [wrap (col "country" integer) /++ defaultValue (value (1::Int))]
 
@@ -129,7 +129,7 @@ Maria DB and SqLite:
 PostgreSQL:
 > CREATE TABLE "People" ("personId" integer PRIMARY KEY)
 -}
-primaryKeyCol :: CreateStmt a
+primaryKeyCol :: CreateStmt dbVendor
 primaryKeyCol =
     createTable "People" [wrap (col "personId" integer) /++ primary False]
 
@@ -140,7 +140,7 @@ Maria DB and SqLite:
 PostgreSQL:
 > CREATE TABLE "People" ("id" serial PRIMARY KEY)
 -}
-primaryKeyColAuto :: CreateStmt a
+primaryKeyColAuto :: CreateStmt dbVendor
 primaryKeyColAuto =
     createTable "People" [wrap (col "personId" integer) /++ primary True]
 
@@ -151,7 +151,7 @@ CREATE TABLE "People" (
     CONSTRAINT "pk" PRIMARY KEY ("firstName", "lastName")
 )
 -}
-primaryKeyTable :: CreateStmt a
+primaryKeyTable :: CreateStmt dbVendor
 primaryKeyTable = do
     createTable
         "People"
@@ -164,7 +164,7 @@ primaryKeyTable = do
 --------------------
 
 -- | CREATE TABLE "People" ("passportNo" varchar(256) UNIQUE)
-createUnique :: CreateStmt a
+createUnique :: CreateStmt dbVendor
 createUnique =
     createTable "People" [wrap (col "passportNo" (varchar 256)) /++ unique]
 
@@ -175,7 +175,7 @@ CREATE TABLE "People" (
     UNIQUE ("firstName", "lastName")
 )
 -}
-createUniqueT :: CreateStmt a
+createUniqueT :: CreateStmt dbVendor
 createUniqueT = do
     createTable "People" cs
     uniqueT cs
@@ -195,7 +195,7 @@ CREATE TABLE "People" (
     "lastName"  varchar(256) NOT NULL
 )
 -}
-noNulls :: CreateStmt a
+noNulls :: CreateStmt dbVendor
 noNulls =
     createTable "People" cs
     where
@@ -212,7 +212,7 @@ noNulls =
 {-|
 CREATE TABLE "People" ("countryId" integer REFERENCES "Countries"("countryId"))
 -}
-createFK :: CreateStmt a
+createFK :: CreateStmt dbVendor
 createFK =
     createTable
         "People"
@@ -223,7 +223,7 @@ createFK =
 --------------------
 
 -- | CREATE TABLE "People" ("age" integer CHECK ("age" > -1))
-createCheck :: CreateStmt a
+createCheck :: CreateStmt dbVendor
 createCheck =
     createTable
         "People"
@@ -238,7 +238,7 @@ CREATE TABLE "People" (
     CONSTRAINT "checks" CHECK ("age" > -1 AND "lastName" <> '')
 )
 -}
-createChecks :: CreateStmt a
+createChecks :: CreateStmt dbVendor
 createChecks = do
     createTable
         "People"
