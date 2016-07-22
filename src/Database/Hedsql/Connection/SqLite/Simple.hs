@@ -37,7 +37,7 @@ module Database.Hedsql.Connection.SqLite.Simple
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import           Data.Text (pack)
+import           Data.Text.Lazy (Text, toStrict)
 import           Database.SQLite.Simple.FromRow
 import qualified Database.Hedsql.SqLite          as H
 import qualified Database.SQLite.Simple          as S
@@ -51,8 +51,8 @@ execute :: H.ToStmt a (H.Statement H.SqLite) => S.Connection -> a -> IO ()
 execute conn query = S.execute_ conn $ toQuery $ H.parse query
 
 -- | Convert a string to a Query.
-toQuery :: String -> S.Query
-toQuery = S.Query . pack
+toQuery :: Text -> S.Query
+toQuery = S.Query . toStrict
 
 --------------------------------------------------------------------------------
 -- PUBLIC
