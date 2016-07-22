@@ -26,7 +26,6 @@ module Database.Hedsql.Examples.Delete
 -- IMPORTS
 --------------------------------------------------------------------------------
 
-import Database.Hedsql.Ext()
 import Database.Hedsql.SqLite
 import qualified Database.Hedsql.MariaDB as M
 import qualified Database.Hedsql.PostgreSQL as P
@@ -35,15 +34,21 @@ import qualified Database.Hedsql.PostgreSQL as P
 -- PUBLIC
 --------------------------------------------------------------------------------
 
+people :: Table a
+people = table "People"
+
+countries :: Table a
+countries = table "Countries"
+
 {-|
 @
 DELETE FROM "People"
 WHERE "age" <> 20
 @
 -}
-deleteNotEqualTo :: DeleteStmt colType dbVendor
+deleteNotEqualTo :: DeleteStmt Void dbVendor
 deleteNotEqualTo = do
-    deleteFrom "People"
+    deleteFrom people
     where_ (col "age" integer /<> value (20::Int))
 
 {-|
@@ -54,16 +59,18 @@ WHERE "personId" IN (SELECT "personId"
                      WHERE "name" = 'Switzerland')
 @
 -}
-deleteSubQuery :: DeleteStmt colType dbVendor
+deleteSubQuery :: DeleteStmt Void dbVendor
 deleteSubQuery = do
-    deleteFrom "People"
-    where_ ("personId" `in_`
+    deleteFrom people
+    where_ (personId `in_`
             (execStmt $ do
-                select "personId"
-                from "Countries"
+                select personId
+                from countries
                 where_ (col "name" (varchar 128) /== value "Switzerland")
             )
         )
+    where
+        personId = col "personId" integer
 
 ----------------------------------------
 -- PostgreSQL
@@ -78,7 +85,7 @@ RETURNING "personId"
 -}
 deleteReturningClause :: DeleteStmt Int P.PostgreSQL
 deleteReturningClause = do
-    deleteFrom "People"
+    deleteFrom people
     where_ (col "age" integer /== value (20::Int))
     P.returning $ col "personId" integer
 
@@ -95,6 +102,6 @@ RETURNING "personId"
 -}
 deleteReturningClauseMariaDB :: DeleteStmt Int M.MariaDB
 deleteReturningClauseMariaDB = do
-    deleteFrom "People"
+    deleteFrom people
     where_ (col "age" integer /== value (20::Int))
     M.returning $ col "personId" integer
