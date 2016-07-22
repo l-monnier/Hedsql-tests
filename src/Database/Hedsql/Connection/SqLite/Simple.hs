@@ -48,7 +48,7 @@ import qualified Database.SQLite.Simple          as S
 
 -- | Execute a statement not returning result.
 execute :: H.ToStmt a (H.Statement H.SqLite) => S.Connection -> a -> IO ()
-execute conn query = S.execute_ conn $ toQuery $ H.parse query
+execute conn query = S.execute_ conn $ toQuery $ H.codeGen query
 
 -- | Convert a string to a Query.
 toQuery :: Text -> S.Query
@@ -76,7 +76,7 @@ insert = execute
 
 -- | Return the first row of a SELECT query's result.
 selectOne :: FromRow r => S.Connection -> H.Query colType H.SqLite -> IO r
-selectOne conn query = fmap head $ S.query_ conn $ toQuery $ H.parse query
+selectOne conn query = fmap head $ S.query_ conn $ toQuery $ H.codeGen query
 
 {-|
 Return all rows of a SELECT query's result.
@@ -85,7 +85,7 @@ Note: since this function uses query_ and not fold_, it should not be used
 for big results.
 -}
 selectAll :: FromRow r => S.Connection -> H.Query colType H.SqLite -> IO [r]
-selectAll conn query = S.query_ conn $ toQuery $ H.parse query
+selectAll conn query = S.query_ conn $ toQuery $ H.codeGen query
 
 -- | Update the values of a table.
 update :: S.Connection -> H.UpdateStmt colType H.SqLite -> IO ()

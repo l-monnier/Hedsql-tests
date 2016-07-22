@@ -33,7 +33,7 @@ testEqualTo = testCase "Update with equal-to" assertUpdate
         assertUpdate = assertEqual
             "Update with equal-to is incorrect"
             "UPDATE \"People\" SET \"age\" = 2050 WHERE \"lastName\" = 'Ceasar'"
-            (S.parse equalTo)
+            (S.codeGen equalTo)
 
 testUpdateSelect :: Test
 testUpdateSelect = testCase "Update with a SELECT" assertUpdate
@@ -46,7 +46,7 @@ testUpdateSelect = testCase "Update with a SELECT" assertUpdate
             <> "(SELECT \"countryId\" FROM \"Countries\" "
             <> "WHERE \"name\" = 'Italy')"
             )
-            (S.parse updateSelect)
+            (S.codeGen updateSelect)
 
 ----------------------------------------
 -- PostgreSQL
@@ -59,7 +59,7 @@ testDefaultVal = testCase "Update with defaultValue" assertUpdate
         assertUpdate = assertEqual
             "Update with a default value is incorrect"
             "UPDATE \"People\" SET \"title\" = DEFAULT WHERE \"personId\" = 1"
-            (P.parse defaultVal)
+            (P.codeGen defaultVal)
 
 testReturning :: Test
 testReturning = testCase "Update with RETURNING clause" assertUpdate
@@ -71,7 +71,7 @@ testReturning = testCase "Update with RETURNING clause" assertUpdate
             <>  "WHERE \"personId\" = 1 "
             <>  "RETURNING \"personId\""
             )
-            (P.parse updateReturningClause)
+            (P.codeGen updateReturningClause)
 
 
 --------------------------------------------------------------------------------

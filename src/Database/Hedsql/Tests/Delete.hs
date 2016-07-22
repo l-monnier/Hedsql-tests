@@ -30,7 +30,7 @@ testNotEqualTo = testCase "Delete with not-equal to" assertDelete
         assertDelete = assertEqual
             "Delete with not-equal to is incorrect"
             "DELETE FROM \"People\" WHERE \"age\" <> 20"
-            (S.parse deleteNotEqualTo)
+            (S.codeGen deleteNotEqualTo)
 
 testSubQuery :: Test
 testSubQuery = testCase "Delete with sub-query" assertDelete
@@ -44,7 +44,7 @@ testSubQuery = testCase "Delete with sub-query" assertDelete
             <> "FROM \"Countries\" "
             <> "WHERE \"name\" = 'Switzerland')"
             )
-            (S.parse deleteSubQuery)
+            (S.codeGen deleteSubQuery)
 
 ----------------------------------------
 -- PostgreSQL
@@ -61,7 +61,7 @@ testReturningPostgreSQL =
             <> "WHERE \"age\" = 20 "
             <> "RETURNING \"personId\""
             )
-            (P.parse deleteReturningClause)
+            (P.codeGen deleteReturningClause)
 
 ----------------------------------------
 -- MariaDB
@@ -78,7 +78,7 @@ testReturningMariaDB =
             <> "WHERE \"age\" = 20 "
             <> "RETURNING \"personId\""
             )
-            (M.parse deleteReturningClauseMariaDB)
+            (M.codeGen deleteReturningClauseMariaDB)
 
 --------------------------------------------------------------------------------
 -- PUBLIC

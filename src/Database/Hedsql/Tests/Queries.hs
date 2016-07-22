@@ -35,7 +35,7 @@ testSelectAllSqLite = testCase "Select all" assertSelect
         assertSelect = assertEqual
             "Select all query is incorrect"
             "SELECT * FROM \"People\""
-            (S.parse selectAll)
+            (S.codeGen selectAll)
 
 testSelectDistinctSqLite :: Test
 testSelectDistinctSqLite = testCase "Select distinct" assertSelect
@@ -44,7 +44,7 @@ testSelectDistinctSqLite = testCase "Select distinct" assertSelect
         assertSelect = assertEqual
             "Select distinct query is incorrect"
             "SELECT DISTINCT \"firstName\" FROM \"People\""
-            (S.parse distinctSelect)
+            (S.codeGen distinctSelect)
 
 ----------------------------------------
 -- Functions
@@ -57,7 +57,7 @@ testAdditionSqLite = testCase "Addition" assertSelect
         assertSelect = assertEqual
             "Addition in query is incorrect"
             "SELECT \"age\" + 1 FROM \"People\""
-            (S.parse addition)
+            (S.codeGen addition)
 
 testMultiplicationSqLite :: Test
 testMultiplicationSqLite = testCase "Multiplication" assertSelect
@@ -66,7 +66,7 @@ testMultiplicationSqLite = testCase "Multiplication" assertSelect
         assertSelect = assertEqual
             "Multiplication in query is incorrect"
             "SELECT 3 * 4"
-            (S.parse multiplication)
+            (S.codeGen multiplication)
 
 testCurrentDateSqLite :: Test
 testCurrentDateSqLite = testCase "Current date" assertSelect
@@ -75,7 +75,7 @@ testCurrentDateSqLite = testCase "Current date" assertSelect
         assertSelect = assertEqual
             "Current date function in query is incorrect"
             "SELECT Date('now')"
-            (S.parse selectCurrentDate)
+            (S.codeGen selectCurrentDate)
 
 testRandomSqLite :: Test
 testRandomSqLite = testCase "Random" assertSelect
@@ -84,7 +84,7 @@ testRandomSqLite = testCase "Random" assertSelect
         assertSelect = assertEqual
             "Random function in query is incorrect"
             "SELECT random()"
-            (S.parse selectRandom)
+            (S.codeGen selectRandom)
 
 testLastInsertIdPostgreSQL :: Test
 testLastInsertIdPostgreSQL =
@@ -94,7 +94,7 @@ testLastInsertIdPostgreSQL =
         assertSelect = assertEqual
             "Last Insert ID for PostgreSQL is incorrect"
             "SELECT lastval()"
-            (P.parse selectLastInsertId)
+            (P.codeGen selectLastInsertId)
 
 testLastInsertIdMariaDB :: Test
 testLastInsertIdMariaDB = testCase "Last Insert ID for MariaDB" assertSelect
@@ -103,7 +103,7 @@ testLastInsertIdMariaDB = testCase "Last Insert ID for MariaDB" assertSelect
         assertSelect = assertEqual
             "Last Insert ID for MariaDB is incorrect"
             "SELECT LAST_INSERT_ID()"
-            (M.parse selectLastInsertId)
+            (M.codeGen selectLastInsertId)
 
 testLastInsertIdSqLite :: Test
 testLastInsertIdSqLite = testCase "Last Insert ID for SqLite" assertSelect
@@ -112,7 +112,7 @@ testLastInsertIdSqLite = testCase "Last Insert ID for SqLite" assertSelect
         assertSelect = assertEqual
             "Last Insert ID for SqLite is incorrect"
             "SELECT last_insert_rowid()"
-            (S.parse selectLastInsertId)
+            (S.codeGen selectLastInsertId)
 
 ----------------------------------------
 -- FROM
@@ -125,7 +125,7 @@ testCrossJoinSqLite = testCase "Cross join" assertFrom
         assertFrom = assertEqual
             "Cross join is incorrect"
             "SELECT * FROM \"People\" CROSS JOIN \"Countries\""
-            (S.parse fromCrossJoin)
+            (S.codeGen fromCrossJoin)
 
 testInnerJoinOnSqLite :: Test
 testInnerJoinOnSqLite = testCase "Inner join SqLite" assertFrom
@@ -137,7 +137,7 @@ testInnerJoinOnSqLite = testCase "Inner join SqLite" assertFrom
          <> "FROM \"People\" "
          <> "INNER JOIN \"Countries\" "
          <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\"")
-            (S.parse fromInnerJoinOn)
+            (S.codeGen fromInnerJoinOn)
 
 testInnerJoinUsingSqLite :: Test
 testInnerJoinUsingSqLite = testCase "Inner join USING SqLite" assertFrom
@@ -147,7 +147,7 @@ testInnerJoinUsingSqLite = testCase "Inner join USING SqLite" assertFrom
             "SqLite inner join using is incorrect"
            ("SELECT * "
          <> "FROM \"People\" INNER JOIN \"Countries\" USING (\"countryId\")")
-            (S.parse fromInnerJoinUsing)
+            (S.codeGen fromInnerJoinUsing)
 
 testNaturalInnerJoin :: Test
 testNaturalInnerJoin = testCase "Natural inner join" assertFrom
@@ -156,7 +156,7 @@ testNaturalInnerJoin = testCase "Natural inner join" assertFrom
         assertFrom = assertEqual
             "Natural inner join is incorrect"
             "SELECT * FROM \"People\" NATURAL INNER JOIN \"Countries\""
-            (S.parse fromNaturalInnerJoin)
+            (S.codeGen fromNaturalInnerJoin)
 
 testLeftJoinOn :: Test
 testLeftJoinOn = testCase "Left join on" assertFrom
@@ -167,7 +167,7 @@ testLeftJoinOn = testCase "Left join on" assertFrom
             (  "SELECT * FROM \"People\" LEFT JOIN \"Countries\" "
             <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
-            (S.parse fromLeftJoinOn)
+            (S.codeGen fromLeftJoinOn)
 
 testLeftJoinUsing :: Test
 testLeftJoinUsing = testCase "Left join using" assertFrom
@@ -178,7 +178,7 @@ testLeftJoinUsing = testCase "Left join using" assertFrom
             (  "SELECT * FROM \"People\" LEFT JOIN \"Countries\" "
             <> "USING (\"countryId\")"
             )
-            (S.parse fromLeftJoinUsing)
+            (S.codeGen fromLeftJoinUsing)
 
 testRightJoinOn :: Test
 testRightJoinOn = testCase "Right join on" assertFrom
@@ -189,7 +189,7 @@ testRightJoinOn = testCase "Right join on" assertFrom
             (  "SELECT * FROM \"People\" RIGHT JOIN \"Countries\" "
             <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
-            (S.parse fromRightJoinOn)
+            (S.codeGen fromRightJoinOn)
 
 testFullJoinOn :: Test
 testFullJoinOn = testCase "Full join on" assertFrom
@@ -200,7 +200,7 @@ testFullJoinOn = testCase "Full join on" assertFrom
             (  "SELECT * FROM \"People\" FULL JOIN \"Countries\" "
             <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
-            (S.parse fromFullJoinOn)
+            (S.codeGen fromFullJoinOn)
 
 testLeftJoinOnAnd :: Test
 testLeftJoinOnAnd = testCase "Left join on and" assertFrom
@@ -212,7 +212,7 @@ testLeftJoinOnAnd = testCase "Left join on and" assertFrom
             <> "ON (\"People\".\"countryId\" = \"Countries\".\"countryId\" "
             <> "AND \"Countries\".\"name\" = 'Italy')"
             )
-            (S.parse fromLeftJoinOnAnd)
+            (S.codeGen fromLeftJoinOnAnd)
 
 testSelfJoin :: Test
 testSelfJoin = testCase "Self join" assertFrom
@@ -224,7 +224,7 @@ testSelfJoin = testCase "Self join" assertFrom
             <> "INNER JOIN \"People\" AS \"Child\" "
             <> "ON \"Father\".\"personId\" = \"Child\".\"father\""
             )
-            (S.parse selfJoin)
+            (S.codeGen selfJoin)
 
 testCrossJoinAlias :: Test
 testCrossJoinAlias = testCase "Cross join with aliases" assertFrom
@@ -235,7 +235,7 @@ testCrossJoinAlias = testCase "Cross join with aliases" assertFrom
             (  "SELECT * FROM \"People\" AS \"P\" "
             <> "CROSS JOIN \"Countries\" AS \"C\""
             )
-            (S.parse crossJoinAlias)
+            (S.codeGen crossJoinAlias)
 
 testCrossRefAlias :: Test
 testCrossRefAlias = testCase "Cross join alias reference" assertFrom
@@ -246,7 +246,7 @@ testCrossRefAlias = testCase "Cross join alias reference" assertFrom
             (  "SELECT * FROM (\"People\" AS \"P\" "
             <> "CROSS JOIN \"Countries\") AS \"PC\""
             )
-            (S.parse crossRefAlias)
+            (S.codeGen crossRefAlias)
 
 testSubQuery :: Test
 testSubQuery = testCase "Sub-query in FROM clause" assertFrom
@@ -255,7 +255,7 @@ testSubQuery = testCase "Sub-query in FROM clause" assertFrom
         assertFrom = assertEqual
             "Sub-query in FROM clause is incorrect"
             "SELECT * FROM (SELECT * FROM \"People\") AS \"P\""
-            (S.parse selectSubQuery)
+            (S.codeGen selectSubQuery)
 
 testNestedJoins :: Test
 testNestedJoins = testCase "Multiple joins in FROM clause" assertFrom
@@ -269,7 +269,7 @@ testNestedJoins = testCase "Multiple joins in FROM clause" assertFrom
          <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\" "
          <> "INNER JOIN \"Addresses\" "
          <> "ON \"People\".\"personId\" = \"Addresses\".\"personId\"")
-            (S.parse nestedJoins)
+            (S.codeGen nestedJoins)
 
 ----------------------------------------
 -- WHERE
@@ -282,7 +282,7 @@ testWhereAlias = testCase "WHERE clause with aliases" assertFrom
         assertFrom = assertEqual
             "WHERE clause with aliases is incorrect"
             "SELECT * FROM \"People\" AS \"P\" WHERE \"P\".\"age\" > 5"
-            (S.parse whereAlias)
+            (S.codeGen whereAlias)
 
 testWhereAnd :: Test
 testWhereAnd = testCase "WHERE clause with AND" assertFrom
@@ -294,7 +294,7 @@ testWhereAnd = testCase "WHERE clause with AND" assertFrom
             <> "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\" "
             <> "AND \"People\".\"age\" > 18"
             )
-            (S.parse whereAnd)
+            (S.codeGen whereAnd)
 
 testWhereInValues :: Test
 testWhereInValues = testCase "WHERE clause with IN values" assertFrom
@@ -305,7 +305,7 @@ testWhereInValues = testCase "WHERE clause with IN values" assertFrom
             (  "SELECT * FROM \"Countries\" "
             <> "WHERE \"name\" IN ('Italy', 'Switzerland')"
             )
-            (S.parse whereInValues)
+            (S.codeGen whereInValues)
 
 testWhereInSelect :: Test
 testWhereInSelect = testCase "WHERE clause with IN sub-query" assertFrom
@@ -317,7 +317,7 @@ testWhereInSelect = testCase "WHERE clause with IN sub-query" assertFrom
             <> "WHERE \"countryId\" IN (SELECT \"countryId\" "
             <> "FROM \"Countries\" WHERE \"inhabitants\" >= \"size\" * 100)"
             )
-            (S.parse whereInSelect)
+            (S.codeGen whereInSelect)
 
 testWhereBetween :: Test
 testWhereBetween = testCase "WHERE clause with BETWEEN clause" assertFrom
@@ -328,7 +328,7 @@ testWhereBetween = testCase "WHERE clause with BETWEEN clause" assertFrom
             (  "SELECT * FROM \"Countries\" "
             <> "WHERE \"inhabitants\" BETWEEN 10000 AND 1000000"
             )
-            (S.parse whereBetween)
+            (S.codeGen whereBetween)
 
 testWhereExists :: Test
 testWhereExists = testCase "WHERE clause with EXISTS sub-query" assertFrom
@@ -341,7 +341,7 @@ testWhereExists = testCase "WHERE clause with EXISTS sub-query" assertFrom
             <> "FROM \"Countries\" "
             <> "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\")"
             )
-            (S.parse whereExists)
+            (S.codeGen whereExists)
 
 ----------------------------------------
 -- ORDER BY
@@ -356,7 +356,7 @@ testOrderBy = testCase "ORDER BY clause" assertOrderBy
             (  "SELECT \"firstName\" FROM \"People\" "
             <> "ORDER BY \"firstName\""
             )
-            (S.parse orderByQuery)
+            (S.codeGen orderByQuery)
 
 testOrderByAlias :: Test
 testOrderByAlias = testCase "ORDER BY alias clause" assertOrderBy
@@ -367,7 +367,7 @@ testOrderByAlias = testCase "ORDER BY alias clause" assertOrderBy
             (  "SELECT \"size\" + \"inhabitants\" AS \"sum\", \"name\" "
             <> "FROM \"Countries\" ORDER BY \"sum\""
             )
-            (S.parse orderBySum)
+            (S.codeGen orderBySum)
 
 testOrderByAscDesc :: Test
 testOrderByAscDesc = testCase "ORDER BY clause with ASC and DESC" assertOrderBy
@@ -378,7 +378,7 @@ testOrderByAscDesc = testCase "ORDER BY clause with ASC and DESC" assertOrderBy
             (  "SELECT \"firstName\", \"lastName\" FROM \"People\" "
             <> "ORDER BY \"firstName\" ASC, \"lastName\" DESC"
             )
-            (S.parse orderByAscDesc)
+            (S.codeGen orderByAscDesc)
 
 testOrderByNull :: Test
 testOrderByNull =
@@ -390,7 +390,7 @@ testOrderByNull =
             (  "SELECT \"age\", \"passeportNumber\" FROM \"People\" "
             <> "ORDER BY \"age\" NULLS FIRST, \"passeportNumber\" NULLS LAST"
             )
-            (S.parse orderByNull)
+            (S.codeGen orderByNull)
 
 testOrderByLimit :: Test
 testOrderByLimit = testCase "ORDER BY with LIMIT clause" assertOrderBy
@@ -401,7 +401,7 @@ testOrderByLimit = testCase "ORDER BY with LIMIT clause" assertOrderBy
             (  "SELECT * FROM \"People\" "
             <> "ORDER BY \"firstName\" LIMIT 2"
             )
-            (S.parse orderByLimit)
+            (S.codeGen orderByLimit)
 
 testOrderByOffset :: Test
 testOrderByOffset = testCase "ORDER BY with OFFSET clause" assertOrderBy
@@ -412,7 +412,7 @@ testOrderByOffset = testCase "ORDER BY with OFFSET clause" assertOrderBy
             (  "SELECT * FROM \"People\" "
             <> "ORDER BY \"firstName\" OFFSET 2"
             )
-            (S.parse orderByOffset)
+            (S.codeGen orderByOffset)
 
 ----------------------------------------
 -- GROUP BY
@@ -425,7 +425,7 @@ testGroupBy = testCase "GROUP BY clause" assertGroupBy
         assertGroupBy = assertEqual
             "GROUP BY clause is incorrect"
             "SELECT \"age\" FROM \"People\" GROUP BY \"age\""
-            (S.parse selectGroupBy)
+            (S.codeGen selectGroupBy)
 
 testGroupBySum :: Test
 testGroupBySum = testCase "GROUP BY with SUM" assertGroupBy
@@ -436,7 +436,7 @@ testGroupBySum = testCase "GROUP BY with SUM" assertGroupBy
             (  "SELECT \"lastName\", SUM(\"age\") FROM \"People\" "
             <> "GROUP BY \"lastName\""
             )
-            (S.parse groupBySum)
+            (S.codeGen groupBySum)
 
 testGroupByAlias :: Test
 testGroupByAlias = testCase "GROUP BY with an alias" assertGroupBy
@@ -447,7 +447,7 @@ testGroupByAlias = testCase "GROUP BY with an alias" assertGroupBy
             (  "SELECT \"lastName\" AS \"name\" FROM \"People\" "
             <> "GROUP BY \"name\""
             )
-            (S.parse groupByAlias)
+            (S.codeGen groupByAlias)
 
 testGroupByComplex :: Test
 testGroupByComplex = testCase "Complex GROUP BY" assertGroupBy
@@ -460,7 +460,7 @@ testGroupByComplex = testCase "Complex GROUP BY" assertGroupBy
             <> "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
             <> "USING (\"personId\") GROUP BY \"personId\", \"name\""
             )
-            (S.parse groupByComplex)
+            (S.codeGen groupByComplex)
 
 testGroupBySumHaving :: Test
 testGroupBySumHaving = testCase "GROUP BY with SUM and HAVING" assertGroupBy
@@ -471,7 +471,7 @@ testGroupBySumHaving = testCase "GROUP BY with SUM and HAVING" assertGroupBy
             (  "SELECT \"lastName\", SUM(\"age\") "
             <> "FROM \"People\" GROUP BY \"lastName\" HAVING SUM(\"age\") > 18"
             )
-            (S.parse groupBySumHaving)
+            (S.codeGen groupBySumHaving)
 
 testHavingComplex :: Test
 testHavingComplex = testCase "Complex HAVING" assertGroupBy
@@ -486,7 +486,7 @@ testHavingComplex = testCase "Complex HAVING" assertGroupBy
             <> "GROUP BY \"personId\", \"P\".\"name\", \"P\".\"age\" "
             <> "HAVING SUM(\"P\".\"age\" * \"C\".\"size\") > 5000000"
             )
-            (S.parse havingComplex)
+            (S.codeGen havingComplex)
 
 ----------------------------------------
 -- Combined queries
@@ -501,7 +501,7 @@ testUnion = testCase "SELECT UNION" assertUnion
             (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
             <> "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
-            (S.parse unionQuery)
+            (S.codeGen unionQuery)
 
 testUnionCombined :: Test
 testUnionCombined = testCase "Combined SELECT UNIONs" assertUnion
@@ -513,7 +513,7 @@ testUnionCombined = testCase "Combined SELECT UNIONs" assertUnion
             <> "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2) "
             <> "INTERSECT SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
-            (S.parse unionCombined)
+            (S.codeGen unionCombined)
 
 testUnionAll :: Test
 testUnionAll = testCase "SELECT UNION ALL" assertUnion
@@ -524,7 +524,7 @@ testUnionAll = testCase "SELECT UNION ALL" assertUnion
             (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
             <> "UNION ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
-            (S.parse unionAllQuery)
+            (S.codeGen unionAllQuery)
 
 testIntersectAll :: Test
 testIntersectAll = testCase "SELECT INTERSECT ALL" assertUnion
@@ -535,7 +535,7 @@ testIntersectAll = testCase "SELECT INTERSECT ALL" assertUnion
             (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
             <> "INTERSECT ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
-            (S.parse intersectAllQuery)
+            (S.codeGen intersectAllQuery)
 
 testExcept :: Test
 testExcept = testCase "SELECT EXCEPT" assertUnion
@@ -546,7 +546,7 @@ testExcept = testCase "SELECT EXCEPT" assertUnion
             (  "SELECT * FROM \"People\" "
             <> "EXCEPT SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
-            (S.parse exceptQuery)
+            (S.codeGen exceptQuery)
 
 testExceptAll :: Test
 testExceptAll = testCase "SELECT EXCEPT ALL" assertUnion
@@ -557,7 +557,7 @@ testExceptAll = testCase "SELECT EXCEPT ALL" assertUnion
             (  "SELECT * FROM \"People\" "
             <> "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
-            (S.parse exceptAllQuery)
+            (S.codeGen exceptAllQuery)
 
 ----------------------------------------
 -- PostgreSQL
@@ -571,7 +571,7 @@ testSelectDistinctOnPostgreSQL = testCase "Select distinct on" assertSelect
             "Select distinct on query is incorrect"
            ("SELECT DISTINCT ON (\"firstName\") * "
          <> "FROM \"People\" ORDER BY \"age\"")
-            (P.parse distinctOnSelect)
+            (P.codeGen distinctOnSelect)
 
 testFromLateralPostgreSQL :: Test
 testFromLateralPostgreSQL = testCase "Lateral join" assertSelect
@@ -585,7 +585,7 @@ testFromLateralPostgreSQL = testCase "Lateral join" assertSelect
             <> "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\") "
             <> "AS \"C\""
             )
-            (P.parse fromLateral)
+            (P.codeGen fromLateral)
 
 --------------------------------------------------------------------------------
 -- PUBLIC

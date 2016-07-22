@@ -37,7 +37,7 @@ testWithCols = testCase "Insert with columns names" assertInsert
             <> "\"married\", \"passportNo\", \"countryId\") "
             <> "VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2)"
             )
-            (S.parse withCols)
+            (S.codeGen withCols)
 
 ----------------------------------------
 -- SqLite
@@ -54,7 +54,7 @@ testJulius = testCase "Insert example Julius Ceasar" assertInsert
             <> "\"married\", \"passportNo\", \"father\", \"countryId\") "
             <> "VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)"
             )
-            (S.parse juliusCeasar)
+            (S.codeGen juliusCeasar)
 
 ----------------------------------------
 -- PostgreSQL
@@ -72,7 +72,7 @@ testDefaultValPostgreSQL = testCase "Insert with a DEFAULT value" assertInsert
             <> "VALUES (NULL, DEFAULT, 'Julius', 'Ceasar', 2000, "
             <> "TRUE, NULL, NULL, 2)"
             )
-            (P.parse defaultValPostgreSQL)
+            (P.codeGen defaultValPostgreSQL)
 
 
 testReturningPostgreSQL :: Test
@@ -88,7 +88,7 @@ testReturningPostgreSQL = testCase "Insert with RETURNING clause" assertInsert
             <> "TRUE, NULL, 2, 2) "
             <> "RETURNING \"id\""
             )
-            (P.parse returningPostgreSQL)
+            (P.codeGen returningPostgreSQL)
 
 
 
@@ -104,7 +104,7 @@ testReturningPostgreSQL = testCase "Insert with RETURNING clause" assertInsert
 --            <> "VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2), "
 --            <> "('Mr', 'Gnaeus', 'Pompeius', 2000, NULL, NULL, 2)"
 --            )
---            (P.parse multiValsPostgreSQL)
+--            (P.codeGen multiValsPostgreSQL)
 
 --------------------------------------------------------------------------------
 -- PUBLIC

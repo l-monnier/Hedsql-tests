@@ -39,7 +39,7 @@ testSelectStruct = testCase "Basic SELECT structure" assertSelect
             \HAVING SUM(\"age\") > 100\n\
             \ORDER BY \"id\"\n\
             \LIMIT 30 OFFSET 2"
-            (S.parseP selectFull)
+            (S.codeGenP selectFull)
 
 testSelectOneCol :: Test
 testSelectOneCol = testCase "SELECT with one column" assertSelect
@@ -49,7 +49,7 @@ testSelectOneCol = testCase "SELECT with one column" assertSelect
             "SELECT with one column is incorrect."
             "SELECT *\n\
             \FROM \"People\""
-            (S.parseP selectAll)
+            (S.codeGenP selectAll)
 
 testSelectTwoCols :: Test
 testSelectTwoCols = testCase "SELECT with two columns" assertSelect
@@ -61,7 +61,7 @@ testSelectTwoCols = testCase "SELECT with two columns" assertSelect
             \  \"firstName\",\n\
             \  \"lastName\"\n\
             \FROM \"People\""
-            (S.parseP selectTwoCols)
+            (S.codeGenP selectTwoCols)
 
 testSelectCombinedOne :: Test
 testSelectCombinedOne =
@@ -77,7 +77,7 @@ testSelectCombinedOne =
             \SELECT *\n\
             \FROM \"People\"\n\
             \WHERE \"personId\" = 2"
-            (S.parseP unionQuery)
+            (S.codeGenP unionQuery)
 
 testJoin :: Test
 testJoin =
@@ -90,7 +90,7 @@ testJoin =
             \FROM \"People\"\n\
             \INNER JOIN \"Countries\"\n\
             \ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
-            (S.parseP fromInnerJoinOn)
+            (S.codeGenP fromInnerJoinOn)
 
 testNestedJoins :: Test
 testNestedJoins =
@@ -105,7 +105,7 @@ testNestedJoins =
             \ON \"People\".\"countryId\" = \"Countries\".\"countryId\"\n\
             \INNER JOIN \"Addresses\"\n\
             \ON \"People\".\"personId\" = \"Addresses\".\"personId\""
-            (S.parseP nestedJoins)
+            (S.codeGenP nestedJoins)
 
 testSubQueryFrom :: Test
 testSubQueryFrom =
@@ -117,7 +117,7 @@ testSubQueryFrom =
             "SELECT *\n\
             \FROM (SELECT *\n\
             \      FROM \"People\") AS \"P\""
-            (S.parseP selectSubQuery)
+            (S.codeGenP selectSubQuery)
 
 testSubQueryWhere :: Test
 testSubQueryWhere =
@@ -131,7 +131,7 @@ testSubQueryWhere =
             \WHERE \"countryId\" IN (SELECT \"countryId\"\n\
             \                      FROM \"Countries\"\n\
             \                      WHERE \"inhabitants\" >= \"size\" * 100)"
-            (S.parseP whereInSelect)
+            (S.codeGenP whereInSelect)
 
 testWhereAnd :: Test
 testWhereAnd =
@@ -147,7 +147,7 @@ testWhereAnd =
             \WHERE\n\
             \  \"People\".\"countryId\" = \"Countries\".\"countryId\"\n\
             \  AND \"People\".\"age\" > 18"
-            (S.parseP whereAnd)
+            (S.codeGenP whereAnd)
 
 testWhereAnds :: Test
 testWhereAnds =
@@ -164,7 +164,7 @@ testWhereAnds =
             \  \"People\".\"countryId\" = \"Countries\".\"countryId\"\n\
             \  AND \"People\".\"age\" > 18\n\
             \  AND \"People\".\"age\" < 70"
-            (S.parseP whereAnds)
+            (S.codeGenP whereAnds)
 
 testGroupByOne :: Test
 testGroupByOne =
@@ -176,7 +176,7 @@ testGroupByOne =
             "SELECT \"age\"\n\
             \FROM \"People\"\n\
             \GROUP BY \"age\""
-            (S.parseP selectGroupBy)
+            (S.codeGenP selectGroupBy)
 
 testGroupByTwo :: Test
 testGroupByTwo =
@@ -192,7 +192,7 @@ testGroupByTwo =
             \GROUP BY\n\
             \  \"firstName\",\n\
             \  \"age\""
-            (S.parseP groupByTwo)
+            (S.codeGenP groupByTwo)
 
 testHavingOne :: Test
 testHavingOne =
@@ -207,7 +207,7 @@ testHavingOne =
             \FROM \"People\"\n\
             \GROUP BY \"lastName\"\n\
             \HAVING SUM(\"age\") > 18"
-            (S.parseP groupBySumHaving)
+            (S.codeGenP groupBySumHaving)
 
 testHavingTwo :: Test
 testHavingTwo =
@@ -222,7 +222,7 @@ testHavingTwo =
             \HAVING\n\
             \  SUM(\"age\") > 18\n\
             \  OR SUM(\"size\") < 1800"
-            (S.parseP groupBySumHavingTwo)
+            (S.codeGenP groupBySumHavingTwo)
 
 testOrderByOne :: Test
 testOrderByOne =
@@ -234,7 +234,7 @@ testOrderByOne =
             "SELECT \"firstName\"\n\
             \FROM \"People\"\n\
             \ORDER BY \"firstName\""
-            (S.parseP orderByQuery)
+            (S.codeGenP orderByQuery)
 
 testOrderByTwo :: Test
 testOrderByTwo =
@@ -250,7 +250,7 @@ testOrderByTwo =
             \ORDER BY\n\
             \  \"firstName\" ASC,\n\
             \  \"lastName\" DESC"
-            (S.parseP orderByAscDesc)
+            (S.codeGenP orderByAscDesc)
 
 testLimit :: Test
 testLimit =
@@ -263,7 +263,7 @@ testLimit =
             \FROM \"People\"\n\
             \ORDER BY \"firstName\"\n\
             \LIMIT 2"
-            (S.parseP orderByLimit)
+            (S.codeGenP orderByLimit)
 
 testOffset :: Test
 testOffset =
@@ -276,7 +276,7 @@ testOffset =
             \FROM \"People\"\n\
             \ORDER BY \"firstName\"\n\
             \OFFSET 2"
-            (S.parseP orderByOffset)
+            (S.codeGenP orderByOffset)
 
 testLimitOffset :: Test
 testLimitOffset =
@@ -289,7 +289,7 @@ testLimitOffset =
             \FROM \"People\"\n\
             \ORDER BY \"firstName\"\n\
             \LIMIT 5 OFFSET 2"
-            (S.parseP orderByLimitOffset)
+            (S.codeGenP orderByLimitOffset)
 
 -- CREATE
 
@@ -306,7 +306,7 @@ testCreate =
             \  \"size\"        INTEGER,\n\
             \  \"inhabitants\" INTEGER\n\
             \)"
-            (S.parseP countries)
+            (S.codeGenP countries)
 
 -- UPDATE
 
@@ -320,7 +320,7 @@ testUpdate =
             "UPDATE \"People\"\n\
             \SET \"age\" = 2050\n\
             \WHERE \"lastName\" = 'Ceasar'"
-            (S.parseP equalTo)
+            (S.codeGenP equalTo)
 
 -- DELETE
 
@@ -333,7 +333,7 @@ testDelete =
             "DELETE statement incorrect."
             "DELETE FROM \"People\"\n\
             \WHERE \"age\" <> 20"
-            (S.parseP deleteNotEqualTo)
+            (S.codeGenP deleteNotEqualTo)
 
 -- INSERT
 
@@ -356,7 +356,7 @@ testInsert =
             \  2000,\n\
             \  NULL,\n\
             \  2)"
-            (S.parseP Insert.defaultVal)
+            (S.codeGenP Insert.defaultVal)
 
 --------------------------------------------------------------------------------
 -- PUBLIC
