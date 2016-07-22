@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Database.Hedsql.Tests.Insert
     ( tests
     ) where
@@ -6,6 +8,7 @@ module Database.Hedsql.Tests.Insert
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Data.Monoid
 import Database.Hedsql.Examples.Insert
 
 import Test.Framework                 (Test, testGroup)
@@ -30,9 +33,9 @@ testWithCols = testCase "Insert with columns names" assertInsert
         assertInsert = assertEqual
             "Insert with columns names is incorrect"
             (  "INSERT INTO \"People\" "
-            ++ "(\"title\", \"firstName\", \"lastName\", \"age\", "
-            ++ "\"married\", \"passportNo\", \"countryId\") "
-            ++ "VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2)"
+            <> "(\"title\", \"firstName\", \"lastName\", \"age\", "
+            <> "\"married\", \"passportNo\", \"countryId\") "
+            <> "VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2)"
             )
             (S.parse withCols)
 
@@ -47,9 +50,9 @@ testJulius = testCase "Insert example Julius Ceasar" assertInsert
         assertInsert = assertEqual
             "Insert of Julius Ceasar is incorrect"
             (  "INSERT INTO \"People\" "
-            ++ "(\"id\", \"title\", \"firstName\", \"lastName\", \"age\", "
-            ++ "\"married\", \"passportNo\", \"father\", \"countryId\") "
-            ++ "VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)"
+            <> "(\"id\", \"title\", \"firstName\", \"lastName\", \"age\", "
+            <> "\"married\", \"passportNo\", \"father\", \"countryId\") "
+            <> "VALUES (1, 'Mr', 'Julius', 'Ceasar', 2000, 1, NULL, 2, 2)"
             )
             (S.parse juliusCeasar)
 
@@ -64,10 +67,10 @@ testDefaultValPostgreSQL = testCase "Insert with a DEFAULT value" assertInsert
         assertInsert = assertEqual
             "Insert with a DEFAULT value is incorrect"
             (  "INSERT INTO \"People\" "
-            ++ "(\"id\", \"title\", \"firstName\", \"lastName\", \"age\", "
-            ++ "\"married\", \"passportNo\", \"father\", \"countryId\") "
-            ++ "VALUES (NULL, DEFAULT, 'Julius', 'Ceasar', 2000, "
-            ++ "TRUE, NULL, NULL, 2)"
+            <> "(\"id\", \"title\", \"firstName\", \"lastName\", \"age\", "
+            <> "\"married\", \"passportNo\", \"father\", \"countryId\") "
+            <> "VALUES (NULL, DEFAULT, 'Julius', 'Ceasar', 2000, "
+            <> "TRUE, NULL, NULL, 2)"
             )
             (P.parse defaultValPostgreSQL)
 
@@ -79,11 +82,11 @@ testReturningPostgreSQL = testCase "Insert with RETURNING clause" assertInsert
         assertInsert = assertEqual
             "Insert with RETURNING clause is incorrect"
             (  "INSERT INTO \"People\" "
-            ++ "(\"title\", \"firstName\", \"lastName\", \"age\", "
-            ++ "\"married\", \"passportNo\", \"father\", \"countryId\") "
-            ++ "VALUES ('Mr', 'Julius', 'Ceasar', 2000, "
-            ++ "TRUE, NULL, 2, 2) "
-            ++ "RETURNING \"id\""
+            <> "(\"title\", \"firstName\", \"lastName\", \"age\", "
+            <> "\"married\", \"passportNo\", \"father\", \"countryId\") "
+            <> "VALUES ('Mr', 'Julius', 'Ceasar', 2000, "
+            <> "TRUE, NULL, 2, 2) "
+            <> "RETURNING \"id\""
             )
             (P.parse returningPostgreSQL)
 
@@ -96,10 +99,10 @@ testReturningPostgreSQL = testCase "Insert with RETURNING clause" assertInsert
 --        assertInsert = assertEqual
 --            "Multiple inserts are incorrect"
 --            (  "INSERT INTO \"People\" "
---            ++ "(\"title\", \"firstName\", \"lastName\", \"age\", "
---            ++ "\"passportNo\", \"countryId\") "
---            ++ "VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2), "
---            ++ "('Mr', 'Gnaeus', 'Pompeius', 2000, NULL, NULL, 2)"
+--            <> "(\"title\", \"firstName\", \"lastName\", \"age\", "
+--            <> "\"passportNo\", \"countryId\") "
+--            <> "VALUES ('Mr', 'Julius', 'Ceasar', 2000, NULL, NULL, 2), "
+--            <> "('Mr', 'Gnaeus', 'Pompeius', 2000, NULL, NULL, 2)"
 --            )
 --            (P.parse multiValsPostgreSQL)
 
