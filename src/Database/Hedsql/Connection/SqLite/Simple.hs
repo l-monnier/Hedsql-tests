@@ -63,7 +63,7 @@ createTable :: S.Connection -> H.CreateStmt H.SqLite -> IO ()
 createTable = execute
 
 -- | Delete values in a table.
-delete :: S.Connection -> H.DeleteStmt a H.SqLite -> IO ()
+delete :: S.Connection -> H.DeleteStmt colType H.SqLite -> IO ()
 delete = execute
 
 -- | Drop a table.
@@ -71,11 +71,11 @@ dropTable :: S.Connection -> H.Drop H.SqLite -> IO ()
 dropTable = execute
 
 -- | Insert values in a table.
-insert :: S.Connection -> H.InsertStmt a H.SqLite -> IO ()
+insert :: S.Connection -> H.InsertStmt colType H.SqLite -> IO ()
 insert = execute
 
 -- | Return the first row of a SELECT query's result.
-selectOne :: FromRow r => S.Connection -> H.Query a H.SqLite -> IO r
+selectOne :: FromRow r => S.Connection -> H.Query colType H.SqLite -> IO r
 selectOne conn query = fmap head $ S.query_ conn $ toQuery $ H.parse query
 
 {-|
@@ -84,9 +84,9 @@ Return all rows of a SELECT query's result.
 Note: since this function uses query_ and not fold_, it should not be used
 for big results.
 -}
-selectAll :: FromRow r => S.Connection -> H.Query a H.SqLite -> IO [r]
+selectAll :: FromRow r => S.Connection -> H.Query colType H.SqLite -> IO [r]
 selectAll conn query = S.query_ conn $ toQuery $ H.parse query
 
 -- | Update the values of a table.
-update :: S.Connection -> H.UpdateStmt a H.SqLite -> IO ()
+update :: S.Connection -> H.UpdateStmt colType H.SqLite -> IO ()
 update = execute
