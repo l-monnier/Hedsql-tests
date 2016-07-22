@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Database.Hedsql.Tests.Update
     ( tests
     ) where
@@ -6,6 +8,7 @@ module Database.Hedsql.Tests.Update
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Data.Monoid
 import Database.Hedsql.Examples.Update
 
 import Test.Framework                 (Test, testGroup)
@@ -39,9 +42,9 @@ testUpdateSelect = testCase "Update with a SELECT" assertUpdate
         assertUpdate = assertEqual
             "Update with a SELECT is incorrect"
             (  "UPDATE \"People\" SET \"age\" = \"age\" + 1 "
-            ++ "WHERE \"countryId\" IN "
-            ++ "(SELECT \"countryId\" FROM \"Countries\" "
-            ++ "WHERE \"name\" = 'Italy')"
+            <> "WHERE \"countryId\" IN "
+            <> "(SELECT \"countryId\" FROM \"Countries\" "
+            <> "WHERE \"name\" = 'Italy')"
             )
             (S.parse updateSelect)
 
@@ -65,8 +68,8 @@ testReturning = testCase "Update with RETURNING clause" assertUpdate
         assertUpdate = assertEqual
             "Update with a RETURNING clause is incorrect"
             (   "UPDATE \"People\" SET \"age\" = 2050 "
-            ++  "WHERE \"personId\" = 1 "
-            ++  "RETURNING \"personId\""
+            <>  "WHERE \"personId\" = 1 "
+            <>  "RETURNING \"personId\""
             )
             (P.parse updateReturningClause)
 

@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Database.Hedsql.Tests.PrettyPrint
     ( tests
     ) where

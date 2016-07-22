@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Database.Hedsql.Tests.TableManipulations
     ( tests
     ) where
@@ -6,6 +8,8 @@ module Database.Hedsql.Tests.TableManipulations
 -- IMPORTS
 --------------------------------------------------------------------------------
 
+import Data.Monoid
+import Data.Text.Lazy                 ()
 import Database.Hedsql.Examples.Create
 import Database.Hedsql.Examples.Drop
 
@@ -36,10 +40,10 @@ testCountriesPostgreSQL =
         assertCreate = assertEqual
             "Create table \"Countries\" is incorrect for PostgreSQL"
             (  "CREATE TABLE \"Countries\" ("
-            ++ "\"countryId\" serial PRIMARY KEY, "
-            ++ "\"name\" varchar(256) NOT NULL, UNIQUE, "
-            ++ "\"size\" integer, "
-            ++ "\"inhabitants\" integer)"
+            <> "\"countryId\" serial PRIMARY KEY, "
+            <> "\"name\" varchar(256) NOT NULL, UNIQUE, "
+            <> "\"size\" integer, "
+            <> "\"inhabitants\" integer)"
             )
             (P.parse countries)
 
@@ -51,15 +55,15 @@ testPeoplePostgreSQL =
         assertCreate = assertEqual
             "Create table \"People\" is incorrect for PostgreSQL"
             (  "CREATE TABLE \"People\" ("
-            ++ "\"personId\" serial PRIMARY KEY, "
-            ++ "\"title\" char(2) DEFAULT('Ms'), "
-            ++ "\"firstName\" varchar(256) NOT NULL, "
-            ++ "\"lastName\" varchar(256) NOT NULL, "
-            ++ "\"age\" integer CHECK (\"age\" > -1), "
-            ++ "\"married\" boolean DEFAULT(FALSE), NOT NULL, "
-            ++ "\"passportNo\" varchar(256) UNIQUE, "
-            ++ "\"father\" integer REFERENCES \"People\"(\"personId\"), "
-            ++ "\"countryId\" integer REFERENCES \"Countries\"(\"countryId\"))"
+            <> "\"personId\" serial PRIMARY KEY, "
+            <> "\"title\" char(2) DEFAULT('Ms'), "
+            <> "\"firstName\" varchar(256) NOT NULL, "
+            <> "\"lastName\" varchar(256) NOT NULL, "
+            <> "\"age\" integer CHECK (\"age\" > -1), "
+            <> "\"married\" boolean DEFAULT(FALSE), NOT NULL, "
+            <> "\"passportNo\" varchar(256) UNIQUE, "
+            <> "\"father\" integer REFERENCES \"People\"(\"personId\"), "
+            <> "\"countryId\" integer REFERENCES \"Countries\"(\"countryId\"))"
             )
             (P.parse people)
 
@@ -92,10 +96,10 @@ testCountriesSqLite =
         assertCreate = assertEqual
             "Create table \"Countries\" is incorrect for SqLite"
             (  "CREATE TABLE \"Countries\" ("
-            ++ "\"countryId\" INTEGER PRIMARY KEY AUTOINCREMENT, "
-            ++ "\"name\" VARCHAR(256) NOT NULL, UNIQUE, "
-            ++ "\"size\" INTEGER, "
-            ++ "\"inhabitants\" INTEGER)"
+            <> "\"countryId\" INTEGER PRIMARY KEY AUTOINCREMENT, "
+            <> "\"name\" VARCHAR(256) NOT NULL, UNIQUE, "
+            <> "\"size\" INTEGER, "
+            <> "\"inhabitants\" INTEGER)"
             )
             (S.parse countries)
 
@@ -106,15 +110,15 @@ testPeopleSqLite = testCase "Create table \"People\" for SqLite" assertCreate
         assertCreate = assertEqual
             "Create table \"People\" is incorrect for SqLite"
             (  "CREATE TABLE \"People\" ("
-            ++ "\"personId\" INTEGER PRIMARY KEY AUTOINCREMENT, "
-            ++ "\"title\" CHARACTER(2) DEFAULT('Ms'), "
-            ++ "\"firstName\" VARCHAR(256) NOT NULL, "
-            ++ "\"lastName\" VARCHAR(256) NOT NULL, "
-            ++ "\"age\" INTEGER CHECK (\"age\" > -1), "
-            ++ "\"married\" BOOLEAN DEFAULT(0), NOT NULL, "
-            ++ "\"passportNo\" VARCHAR(256) UNIQUE, "
-            ++ "\"father\" INTEGER REFERENCES \"People\"(\"personId\"), "
-            ++ "\"countryId\" INTEGER REFERENCES \"Countries\"(\"countryId\"))"
+            <> "\"personId\" INTEGER PRIMARY KEY AUTOINCREMENT, "
+            <> "\"title\" CHARACTER(2) DEFAULT('Ms'), "
+            <> "\"firstName\" VARCHAR(256) NOT NULL, "
+            <> "\"lastName\" VARCHAR(256) NOT NULL, "
+            <> "\"age\" INTEGER CHECK (\"age\" > -1), "
+            <> "\"married\" BOOLEAN DEFAULT(0), NOT NULL, "
+            <> "\"passportNo\" VARCHAR(256) UNIQUE, "
+            <> "\"father\" INTEGER REFERENCES \"People\"(\"personId\"), "
+            <> "\"countryId\" INTEGER REFERENCES \"Countries\"(\"countryId\"))"
             )
             (S.parse people)
 
@@ -139,10 +143,10 @@ testPrimaryKeyAutoSqLite =
         assertCreate :: Assertion
         assertCreate = assertEqual
             (  "Create table with a primary key with an auto increment"
-            ++ "is incorrect for SqLite"
+            <> "is incorrect for SqLite"
             )
             (  "CREATE TABLE \"People\" (\"personId\" INTEGER PRIMARY KEY "
-            ++ "AUTOINCREMENT)"
+            <> "AUTOINCREMENT)"
             )
             (S.parse primaryKeyColAuto)
             
@@ -153,9 +157,9 @@ testPrimaryKeyTableSqLite = testCase "Create table with primary key" assertCreat
         assertCreate = assertEqual
             "Create table with a primary key is incorrect for SqLite"
            ("CREATE TABLE \"People\" ("
-         ++ "\"firstName\" VARCHAR(256), "
-         ++ "\"lastName\" VARCHAR(256), "
-         ++ "CONSTRAINT \"pk\" PRIMARY KEY (\"firstName\", \"lastName\"))")
+         <> "\"firstName\" VARCHAR(256), "
+         <> "\"lastName\" VARCHAR(256), "
+         <> "CONSTRAINT \"pk\" PRIMARY KEY (\"firstName\", \"lastName\"))")
             (S.parse primaryKeyTable)
 
 testPrimaryKeyAutoPostgreSQL :: Test
@@ -165,7 +169,7 @@ testPrimaryKeyAutoPostgreSQL =
         assertCreate :: Assertion
         assertCreate = assertEqual
             ("Create table with a primary key with auto increment"
-          ++ "is incorrect for PostgreSQL")
+           <> "is incorrect for PostgreSQL")
             "CREATE TABLE \"People\" (\"personId\" serial PRIMARY KEY)"
             (P.parse primaryKeyColAuto)
 
@@ -186,8 +190,8 @@ testNoNullsSqLite =
         assertCreate = assertEqual
             "Create table with not null constraints"
             ("CREATE TABLE \"People\" ("
-          ++ "\"firstName\" VARCHAR(256) CONSTRAINT \"no_null\" NOT NULL, "
-          ++ "\"lastName\" VARCHAR(256) NOT NULL)")
+          <> "\"firstName\" VARCHAR(256) CONSTRAINT \"no_null\" NOT NULL, "
+          <> "\"lastName\" VARCHAR(256) NOT NULL)")
             (S.parse noNulls)
 
 testCreateCheckSqLite :: Test
@@ -207,9 +211,9 @@ testCreateChecksSqLite =
         assertCreate = assertEqual
             "Check constraints in table statement are incorrect"
            ("CREATE TABLE \"People\" ("
-         ++ "\"lastName\" VARCHAR(256), \"age\" INTEGER, "
-         ++ "CONSTRAINT \"checks\" CHECK (\"age\" > -1 AND \"lastName\" <> '')"
-         ++ ")")
+         <> "\"lastName\" VARCHAR(256), \"age\" INTEGER, "
+         <> "CONSTRAINT \"checks\" CHECK (\"age\" > -1 AND \"lastName\" <> '')"
+         <> ")")
            (S.parse createChecks)
 
 testCreateFKSqLite :: Test
@@ -220,7 +224,7 @@ testCreateFKSqLite =
         assertCreate = assertEqual
             "Foreign key in table statement is incorrect"
            ("CREATE TABLE \"People\" "
-         ++ "(\"countryId\" INTEGER REFERENCES \"Countries\"(\"countryId\"))")
+         <> "(\"countryId\" INTEGER REFERENCES \"Countries\"(\"countryId\"))")
            (S.parse createFK)
 
 testCreateTableSqLite :: Test
@@ -250,7 +254,7 @@ testCreateUniqueTSqLite =
         assertCreate = assertEqual
             "Create table with unique constraint on two columns is incorrect"
            ("CREATE TABLE \"People\" (\"firstName\" VARCHAR(256), "
-         ++ "\"lastName\" VARCHAR(256), UNIQUE (\"firstName\", \"lastName\"))")
+         <> "\"lastName\" VARCHAR(256), UNIQUE (\"firstName\", \"lastName\"))")
             (S.parse createUniqueT)
             
 --------------------

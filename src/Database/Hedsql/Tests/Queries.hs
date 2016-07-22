@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Database.Hedsql.Tests.Queries
     ( tests
     ) where
@@ -6,8 +8,10 @@ module Database.Hedsql.Tests.Queries
 -- Imports
 --------------------------------------------------------------------------------
 
+import Data.Monoid
 import Database.Hedsql.Examples.Select
 
+import Data.Text.Lazy                 ()
 import Test.Framework                 (Test, testGroup)
 import Test.Framework.Providers.HUnit (testCase)
 import Test.HUnit              hiding (Test)
@@ -130,9 +134,9 @@ testInnerJoinOnSqLite = testCase "Inner join SqLite" assertFrom
         assertFrom = assertEqual
             "SqLite inner join is incorrect"
            ("SELECT * "
-         ++ "FROM \"People\" "
-         ++ "INNER JOIN \"Countries\" "
-         ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\"")
+         <> "FROM \"People\" "
+         <> "INNER JOIN \"Countries\" "
+         <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\"")
             (S.parse fromInnerJoinOn)
 
 testInnerJoinUsingSqLite :: Test
@@ -142,7 +146,7 @@ testInnerJoinUsingSqLite = testCase "Inner join USING SqLite" assertFrom
         assertFrom = assertEqual
             "SqLite inner join using is incorrect"
            ("SELECT * "
-         ++ "FROM \"People\" INNER JOIN \"Countries\" USING (\"countryId\")")
+         <> "FROM \"People\" INNER JOIN \"Countries\" USING (\"countryId\")")
             (S.parse fromInnerJoinUsing)
 
 testNaturalInnerJoin :: Test
@@ -161,7 +165,7 @@ testLeftJoinOn = testCase "Left join on" assertFrom
         assertFrom = assertEqual
             "Left join on is incorrect"
             (  "SELECT * FROM \"People\" LEFT JOIN \"Countries\" "
-            ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
+            <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
             (S.parse fromLeftJoinOn)
 
@@ -172,7 +176,7 @@ testLeftJoinUsing = testCase "Left join using" assertFrom
         assertFrom = assertEqual
             "Left join using is incorrect"
             (  "SELECT * FROM \"People\" LEFT JOIN \"Countries\" "
-            ++ "USING (\"countryId\")"
+            <> "USING (\"countryId\")"
             )
             (S.parse fromLeftJoinUsing)
 
@@ -183,7 +187,7 @@ testRightJoinOn = testCase "Right join on" assertFrom
         assertFrom = assertEqual
             "Right join on is incorrect"
             (  "SELECT * FROM \"People\" RIGHT JOIN \"Countries\" "
-            ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
+            <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
             (S.parse fromRightJoinOn)
 
@@ -194,7 +198,7 @@ testFullJoinOn = testCase "Full join on" assertFrom
         assertFrom = assertEqual
             "Full join on is incorrect"
             (  "SELECT * FROM \"People\" FULL JOIN \"Countries\" "
-            ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
+            <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\""
             )
             (S.parse fromFullJoinOn)
 
@@ -205,8 +209,8 @@ testLeftJoinOnAnd = testCase "Left join on and" assertFrom
         assertFrom = assertEqual
             "Left join on and is incorrect"
             (  "SELECT * FROM \"People\" LEFT JOIN \"Countries\" "
-            ++ "ON (\"People\".\"countryId\" = \"Countries\".\"countryId\" "
-            ++ "AND \"Countries\".\"name\" = 'Italy')"
+            <> "ON (\"People\".\"countryId\" = \"Countries\".\"countryId\" "
+            <> "AND \"Countries\".\"name\" = 'Italy')"
             )
             (S.parse fromLeftJoinOnAnd)
 
@@ -217,8 +221,8 @@ testSelfJoin = testCase "Self join" assertFrom
         assertFrom = assertEqual
             "Self join is incorrect"
             (  "SELECT * FROM \"People\" AS \"Father\" "
-            ++ "INNER JOIN \"People\" AS \"Child\" "
-            ++ "ON \"Father\".\"personId\" = \"Child\".\"father\""
+            <> "INNER JOIN \"People\" AS \"Child\" "
+            <> "ON \"Father\".\"personId\" = \"Child\".\"father\""
             )
             (S.parse selfJoin)
 
@@ -229,7 +233,7 @@ testCrossJoinAlias = testCase "Cross join with aliases" assertFrom
         assertFrom = assertEqual
             "Cross join with aliases is incorrect"
             (  "SELECT * FROM \"People\" AS \"P\" "
-            ++ "CROSS JOIN \"Countries\" AS \"C\""
+            <> "CROSS JOIN \"Countries\" AS \"C\""
             )
             (S.parse crossJoinAlias)
 
@@ -240,7 +244,7 @@ testCrossRefAlias = testCase "Cross join alias reference" assertFrom
         assertFrom = assertEqual
             "Cross join alias reference is incorrect"
             (  "SELECT * FROM (\"People\" AS \"P\" "
-            ++ "CROSS JOIN \"Countries\") AS \"PC\""
+            <> "CROSS JOIN \"Countries\") AS \"PC\""
             )
             (S.parse crossRefAlias)
 
@@ -260,11 +264,11 @@ testNestedJoins = testCase "Multiple joins in FROM clause" assertFrom
         assertFrom = assertEqual
             "Multiple joins in FROM clause is incorrect"
            ("SELECT * "
-         ++ "FROM \"People\" "
-         ++ "INNER JOIN \"Countries\" "
-         ++ "ON \"People\".\"countryId\" = \"Countries\".\"countryId\" "
-         ++ "INNER JOIN \"Addresses\" "
-         ++ "ON \"People\".\"personId\" = \"Addresses\".\"personId\"")
+         <> "FROM \"People\" "
+         <> "INNER JOIN \"Countries\" "
+         <> "ON \"People\".\"countryId\" = \"Countries\".\"countryId\" "
+         <> "INNER JOIN \"Addresses\" "
+         <> "ON \"People\".\"personId\" = \"Addresses\".\"personId\"")
             (S.parse nestedJoins)
 
 ----------------------------------------
@@ -287,8 +291,8 @@ testWhereAnd = testCase "WHERE clause with AND" assertFrom
         assertFrom = assertEqual
             "WHERE clause with AND is incorrect"
             (  "SELECT * FROM \"People\", \"Countries\" "
-            ++ "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\" "
-            ++ "AND \"People\".\"age\" > 18"
+            <> "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\" "
+            <> "AND \"People\".\"age\" > 18"
             )
             (S.parse whereAnd)
 
@@ -299,7 +303,7 @@ testWhereInValues = testCase "WHERE clause with IN values" assertFrom
         assertFrom = assertEqual
             "WHERE clause with IN values is incorrect"
             (  "SELECT * FROM \"Countries\" "
-            ++ "WHERE \"name\" IN ('Italy', 'Switzerland')"
+            <> "WHERE \"name\" IN ('Italy', 'Switzerland')"
             )
             (S.parse whereInValues)
 
@@ -310,8 +314,8 @@ testWhereInSelect = testCase "WHERE clause with IN sub-query" assertFrom
         assertFrom = assertEqual
             "WHERE clause with IN sub-query is incorrect"
             (  "SELECT * FROM \"People\" "
-            ++ "WHERE \"countryId\" IN (SELECT \"countryId\" "
-            ++ "FROM \"Countries\" WHERE \"inhabitants\" >= \"size\" * 100)"
+            <> "WHERE \"countryId\" IN (SELECT \"countryId\" "
+            <> "FROM \"Countries\" WHERE \"inhabitants\" >= \"size\" * 100)"
             )
             (S.parse whereInSelect)
 
@@ -322,7 +326,7 @@ testWhereBetween = testCase "WHERE clause with BETWEEN clause" assertFrom
         assertFrom = assertEqual
             "WHERE clause with BETWEEN clause is incorrect"
             (  "SELECT * FROM \"Countries\" "
-            ++ "WHERE \"inhabitants\" BETWEEN 10000 AND 1000000"
+            <> "WHERE \"inhabitants\" BETWEEN 10000 AND 1000000"
             )
             (S.parse whereBetween)
 
@@ -333,9 +337,9 @@ testWhereExists = testCase "WHERE clause with EXISTS sub-query" assertFrom
         assertFrom = assertEqual
             "WHERE clause with EXISTS sub-query is incorrect"
             (  "SELECT * FROM \"People\" "
-            ++ "WHERE EXISTS (SELECT * "
-            ++ "FROM \"Countries\" "
-            ++ "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\")"
+            <> "WHERE EXISTS (SELECT * "
+            <> "FROM \"Countries\" "
+            <> "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\")"
             )
             (S.parse whereExists)
 
@@ -350,7 +354,7 @@ testOrderBy = testCase "ORDER BY clause" assertOrderBy
         assertOrderBy = assertEqual
             "ORDER BY clause is incorrect"
             (  "SELECT \"firstName\" FROM \"People\" "
-            ++ "ORDER BY \"firstName\""
+            <> "ORDER BY \"firstName\""
             )
             (S.parse orderByQuery)
 
@@ -361,7 +365,7 @@ testOrderByAlias = testCase "ORDER BY alias clause" assertOrderBy
         assertOrderBy = assertEqual
             "ORDER BY alias clause is incorrect"
             (  "SELECT \"size\" + \"inhabitants\" AS \"sum\", \"name\" "
-            ++ "FROM \"Countries\" ORDER BY \"sum\""
+            <> "FROM \"Countries\" ORDER BY \"sum\""
             )
             (S.parse orderBySum)
 
@@ -372,7 +376,7 @@ testOrderByAscDesc = testCase "ORDER BY clause with ASC and DESC" assertOrderBy
         assertOrderBy = assertEqual
             "ORDER BY clause with ASC and DESC is incorrect"
             (  "SELECT \"firstName\", \"lastName\" FROM \"People\" "
-            ++ "ORDER BY \"firstName\" ASC, \"lastName\" DESC"
+            <> "ORDER BY \"firstName\" ASC, \"lastName\" DESC"
             )
             (S.parse orderByAscDesc)
 
@@ -384,7 +388,7 @@ testOrderByNull =
         assertOrderBy = assertEqual
             "ORDER BY clause with NullS first and last is incorrect"
             (  "SELECT \"age\", \"passeportNumber\" FROM \"People\" "
-            ++ "ORDER BY \"age\" NULLS FIRST, \"passeportNumber\" NULLS LAST"
+            <> "ORDER BY \"age\" NULLS FIRST, \"passeportNumber\" NULLS LAST"
             )
             (S.parse orderByNull)
 
@@ -395,7 +399,7 @@ testOrderByLimit = testCase "ORDER BY with LIMIT clause" assertOrderBy
         assertOrderBy = assertEqual
             "ORDER BY with LIMIT clause is incorrect"
             (  "SELECT * FROM \"People\" "
-            ++ "ORDER BY \"firstName\" LIMIT 2"
+            <> "ORDER BY \"firstName\" LIMIT 2"
             )
             (S.parse orderByLimit)
 
@@ -406,7 +410,7 @@ testOrderByOffset = testCase "ORDER BY with OFFSET clause" assertOrderBy
         assertOrderBy = assertEqual
             "ORDER BY with OFFSET clause is incorrect"
             (  "SELECT * FROM \"People\" "
-            ++ "ORDER BY \"firstName\" OFFSET 2"
+            <> "ORDER BY \"firstName\" OFFSET 2"
             )
             (S.parse orderByOffset)
 
@@ -430,7 +434,7 @@ testGroupBySum = testCase "GROUP BY with SUM" assertGroupBy
         assertGroupBy = assertEqual
             "GROUP BY with SUM is incorrect"
             (  "SELECT \"lastName\", SUM(\"age\") FROM \"People\" "
-            ++ "GROUP BY \"lastName\""
+            <> "GROUP BY \"lastName\""
             )
             (S.parse groupBySum)
 
@@ -441,7 +445,7 @@ testGroupByAlias = testCase "GROUP BY with an alias" assertGroupBy
         assertGroupBy = assertEqual
             "GROUP BY with an alias is incorrect"
             (  "SELECT \"lastName\" AS \"name\" FROM \"People\" "
-            ++ "GROUP BY \"name\""
+            <> "GROUP BY \"name\""
             )
             (S.parse groupByAlias)
 
@@ -452,9 +456,9 @@ testGroupByComplex = testCase "Complex GROUP BY" assertGroupBy
         assertGroupBy = assertEqual
             "Complex GROUP BY is invalid"
             (  "SELECT \"personId\", \"P\".\"lastName\" AS \"name\", "
-            ++ "SUM(\"C\".\"size\") * \"P\".\"age\" AS \"weirdFigure\" "
-            ++ "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
-            ++ "USING (\"personId\") GROUP BY \"personId\", \"name\""
+            <> "SUM(\"C\".\"size\") * \"P\".\"age\" AS \"weirdFigure\" "
+            <> "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
+            <> "USING (\"personId\") GROUP BY \"personId\", \"name\""
             )
             (S.parse groupByComplex)
 
@@ -465,7 +469,7 @@ testGroupBySumHaving = testCase "GROUP BY with SUM and HAVING" assertGroupBy
         assertGroupBy = assertEqual
             "GROUP BY with SUM and HAVING is incorrect"
             (  "SELECT \"lastName\", SUM(\"age\") "
-            ++ "FROM \"People\" GROUP BY \"lastName\" HAVING SUM(\"age\") > 18"
+            <> "FROM \"People\" GROUP BY \"lastName\" HAVING SUM(\"age\") > 18"
             )
             (S.parse groupBySumHaving)
 
@@ -476,11 +480,11 @@ testHavingComplex = testCase "Complex HAVING" assertGroupBy
         assertGroupBy = assertEqual
             "Complex HAVING is invalid"
             (  "SELECT \"personId\", \"P\".\"name\", "
-            ++ "SUM(\"C\".\"size\" * (\"P\".\"age\" - 2)) AS \"weird\" "
-            ++ "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
-            ++ "USING (\"personId\") WHERE \"personId\" > 2 "
-            ++ "GROUP BY \"personId\", \"P\".\"name\", \"P\".\"age\" "
-            ++ "HAVING SUM(\"P\".\"age\" * \"C\".\"size\") > 5000000"
+            <> "SUM(\"C\".\"size\" * (\"P\".\"age\" - 2)) AS \"weird\" "
+            <> "FROM \"People\" AS \"P\" LEFT JOIN \"Countries\" AS \"C\" "
+            <> "USING (\"personId\") WHERE \"personId\" > 2 "
+            <> "GROUP BY \"personId\", \"P\".\"name\", \"P\".\"age\" "
+            <> "HAVING SUM(\"P\".\"age\" * \"C\".\"size\") > 5000000"
             )
             (S.parse havingComplex)
 
@@ -495,7 +499,7 @@ testUnion = testCase "SELECT UNION" assertUnion
         assertUnion = assertEqual
             "SELECT UNION is incorrect"
             (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2"
+            <> "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
             (S.parse unionQuery)
 
@@ -506,8 +510,8 @@ testUnionCombined = testCase "Combined SELECT UNIONs" assertUnion
         assertUnion = assertEqual
             "Combined SELECT UNIONs are incorrect"
             (  "(SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2) "
-            ++ "INTERSECT SELECT * FROM \"People\" WHERE \"personId\" = 1"
+            <> "UNION SELECT * FROM \"People\" WHERE \"personId\" = 2) "
+            <> "INTERSECT SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse unionCombined)
 
@@ -518,7 +522,7 @@ testUnionAll = testCase "SELECT UNION ALL" assertUnion
         assertUnion = assertEqual
             "SELECT UNION ALL is incorrect"
             (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "UNION ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
+            <> "UNION ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
             (S.parse unionAllQuery)
 
@@ -529,7 +533,7 @@ testIntersectAll = testCase "SELECT INTERSECT ALL" assertUnion
         assertUnion = assertEqual
             "SELECT INTERSECT ALL is incorrect"
             (  "SELECT * FROM \"People\" WHERE \"personId\" = 1 "
-            ++ "INTERSECT ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
+            <> "INTERSECT ALL SELECT * FROM \"People\" WHERE \"personId\" = 2"
             )
             (S.parse intersectAllQuery)
 
@@ -540,7 +544,7 @@ testExcept = testCase "SELECT EXCEPT" assertUnion
         assertUnion = assertEqual
             "SELECT EXCEPT is incorrect"
             (  "SELECT * FROM \"People\" "
-            ++ "EXCEPT SELECT * FROM \"People\" WHERE \"personId\" = 1"
+            <> "EXCEPT SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse exceptQuery)
 
@@ -551,7 +555,7 @@ testExceptAll = testCase "SELECT EXCEPT ALL" assertUnion
         assertUnion = assertEqual
             "SELECT EXCEPT ALL is incorrect"
             (  "SELECT * FROM \"People\" "
-            ++ "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1"
+            <> "EXCEPT ALL SELECT * FROM \"People\" WHERE \"personId\" = 1"
             )
             (S.parse exceptAllQuery)
 
@@ -566,7 +570,7 @@ testSelectDistinctOnPostgreSQL = testCase "Select distinct on" assertSelect
         assertSelect = assertEqual
             "Select distinct on query is incorrect"
            ("SELECT DISTINCT ON (\"firstName\") * "
-         ++ "FROM \"People\" ORDER BY \"age\"")
+         <> "FROM \"People\" ORDER BY \"age\"")
             (P.parse distinctOnSelect)
 
 testFromLateralPostgreSQL :: Test
@@ -576,10 +580,10 @@ testFromLateralPostgreSQL = testCase "Lateral join" assertSelect
         assertSelect = assertEqual
             "Lateral join is incorrect"
             (  "SELECT * "
-            ++ "FROM \"Countries\", LATERAL ("
-            ++ "SELECT * FROM \"People\" "
-            ++ "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\") "
-            ++ "AS \"C\""
+            <> "FROM \"Countries\", LATERAL ("
+            <> "SELECT * FROM \"People\" "
+            <> "WHERE \"People\".\"countryId\" = \"Countries\".\"countryId\") "
+            <> "AS \"C\""
             )
             (P.parse fromLateral)
 
